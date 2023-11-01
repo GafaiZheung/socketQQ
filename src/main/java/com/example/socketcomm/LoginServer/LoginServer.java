@@ -38,8 +38,11 @@ public class LoginServer {
                     else if(strmsg[0].equals("register"))
                     {
                         OutputStream out = socket.getOutputStream();
-                        int num = new Random().nextInt(10000) + 10000;
-                        mysql.update_qq(String.valueOf(num), strmsg[1], strmsg[2], strmsg[3]);
+                        int num;
+                        do
+                        {
+                            num = new Random().nextInt(10000) + 10000;
+                        } while (!mysql.update_qq(String.valueOf(num), strmsg[1], strmsg[2], strmsg[3]));
                         out.write(String.valueOf(num).getBytes());
                     }
                     socket.close();

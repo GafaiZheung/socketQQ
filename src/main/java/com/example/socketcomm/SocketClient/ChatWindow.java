@@ -141,6 +141,12 @@ public class ChatWindow extends Application
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
+    void forgetButton(Stage primaryStage)
+    {
+        ;
+    }
+
     void registerScene(Stage primaryStage)
     {
         Circle userImage = new Circle(45);
@@ -206,8 +212,24 @@ public class ChatWindow extends Application
             }
             else
             {
-                registerAction(nickNameField.getText(), password, phoneNumField.getText());
-                loginScene(primaryStage);
+                String backUserID = registerAction(nickNameField.getText(), password, phoneNumField.getText());
+                Label backIDText = new Label("您的账号是：" + backUserID);
+                Button button = new Button("立即登录");
+
+                VBox success = new VBox(30);
+                success.getChildren().addAll(backIDText, button);
+                success.setStyle("-fx-background-color: #FFFFFF");
+                success.setAlignment(Pos.CENTER);
+
+                Scene successScene = new Scene(success, 260, 100);
+
+                button.setOnAction(actionEvent1 -> {
+                    userIDField.setText(backUserID);
+                    passWDField.setFocusTraversable(true);
+                    loginScene(primaryStage);
+                });
+                primaryStage.setScene(successScene);
+                primaryStage.show();
             }
         });
 
@@ -216,12 +238,8 @@ public class ChatWindow extends Application
         vBox.setStyle("-fx-background-color: #FFFFFF");
         vBox.setAlignment(Pos.CENTER);
 
-        vBox.setFocusTraversable(false);
         nickNameField.setFocusTraversable(false);
-        passwordField.setFocusTraversable(false);
-        confirmField.setFocusTraversable(false);
-        phoneNumField.setFocusTraversable(false);
-        confirmButton.setFocusTraversable(false);
+        focusLabel.setFocusTraversable(true);
 
 
         Scene scene = new Scene(vBox, 260, 410);
@@ -231,11 +249,12 @@ public class ChatWindow extends Application
         primaryStage.show();
     }
 
-    void registerAction(String nickName, String password, String phoneNumber)
+    String registerAction(String nickName, String password, String phoneNumber)
     {
         String IP = "127.0.0.1";
 
         String registerMsg = "register," + nickName + "," + password + "," + phoneNumber;
+        AtomicInteger backUserID = new AtomicInteger();
 
         try {
             Socket socket = new Socket(IP, 8080);
@@ -256,8 +275,9 @@ public class ChatWindow extends Application
             Thread receiveThread = new Thread(() -> {
                 try {
                     InputStream in = socket.getInputStream();
-                    System.out.println(readData(in));
-//                    System.out.println("Login Status: " + loginStatus);
+                    String temp = readData(in);
+                    //这里不要sout测试temp是什么，会变得不幸
+                    backUserID.set(Integer.parseInt(temp));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -274,6 +294,7 @@ public class ChatWindow extends Application
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+        return String.valueOf(backUserID.get());
     }
 
 

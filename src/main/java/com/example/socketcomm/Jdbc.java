@@ -102,27 +102,35 @@ public class Jdbc {
     }
 
     // 注册后更新信息并创建表
-    public void update_qq(String UserID, String NickName, String PassWord, String Phonenumber) {
+    public boolean update_qq(String UserID, String PassWord, String NickName, String Phonenumber) {
+        boolean b = true;
         try {
-            String sql = "insert into foundation values ('" + UserID + "', '" + PassWord + "', '" + NickName + "', '" + Phonenumber + "')";  // 定义sql语句
-            int rs = statement.executeUpdate(sql);  // 查询数据库
-            String sql1 = "CREATE TABLE f_" + UserID + "  (\n" +
-                    "  UserID varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
-                    "  NickName varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
-                    "  Phone varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
-                    "  PRIMARY KEY (UserID) USING BTREE\n" +
-                    ")";
-            int rs1 = statement.executeUpdate(sql1);
-            String sql2 = "insert into f_" + UserID + " values ('" + UserID + "', '" + NickName + "', '" + Phonenumber + "')";
-            int rs2 = statement.executeUpdate(sql2);
-            if(rs > 0 && rs1 > 0 && rs2 > 0) {
-                System.out.println("更新成功");
+            String sql3 = "select * from foundation where UserID = " + UserID;
+            ResultSet rs3 = statement.executeQuery(sql3);
+            System.out.println(rs3.next());
+            if(rs3.next()) b = false;
+            else {
+                String sql = "insert into foundation values ('" + UserID + "', '" + PassWord + "', '" + NickName + "', '" + Phonenumber + "')";  // 定义sql语句
+                int rs = statement.executeUpdate(sql);  // 查询数据库
+                String sql1 = "CREATE TABLE f_" + UserID + "  (\n" +
+                        "  UserID varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  NickName varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  Phone varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  PRIMARY KEY (UserID) USING BTREE\n" +
+                        ")";
+                int rs1 = statement.executeUpdate(sql1);
+                String sql2 = "insert into f_" + UserID + " values ('" + UserID + "', '" + NickName + "', '" + Phonenumber + "')";
+                int rs2 = statement.executeUpdate(sql2);
+                if (rs > 0 && rs1 > 0 && rs2 > 0) {
+                    System.out.println("更新成功");
+                }
             }
         }
         catch (Exception e) {
             System.out.println("获取信息错误！");
             e.printStackTrace();
         }
+        return b;
     }
 
     // 查找好友是否已经注册
