@@ -1,0 +1,12 @@
+recv,1,111
+send,gafai,你好！
+recv,1,你也好！
+send,gafai,你吃臭豆腐吗？
+send,gafai,你吃臭豆腐吗？
+recv,1,我吃牛魔
+send,gafai,去你丫的
+recv,1,尼玛死了
+send,gafai,尼玛才死了
+recv,1,傻逼dyq
+send,gafai,真恶心
+send,gafai,你马

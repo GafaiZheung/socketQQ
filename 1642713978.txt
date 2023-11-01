@@ -1,0 +1,12 @@
+send,gafai,123
+send,gafai,111
+recv,xukang,你好！
+send,gafai,你也好！
+recv,xukang,你吃臭豆腐吗？
+send,gafai,我吃牛魔
+recv,xukang,去你丫的
+send,gafai,尼玛死了
+recv,xukang,尼玛才死了
+send,gafai,傻逼dyq
+recv,xukang,真恶心
+recv,xukang,你马
