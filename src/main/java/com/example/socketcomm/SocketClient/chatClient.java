@@ -1,10 +1,6 @@
 package com.example.socketcomm.SocketClient;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -19,6 +15,8 @@ public class chatClient {
     String IP;//定义IP变量，用来存放传进来的IP地址
     BufferedReader reader;//定义读取数据的输入流
     PrintWriter writer;//定义写数据的输出流
+
+    OutputStream fileWriter;
     //设置给窗体中添加文字的方法，实现消息的显示
     public void connect(String ip) {
         //把传进来的ip赋值给IP
@@ -35,6 +33,8 @@ public class chatClient {
                     reader = new BufferedReader(
                             new InputStreamReader(
                                     socket.getInputStream(), "UTF-8"));
+
+                    fileWriter = socket.getOutputStream();
 
                     String line;
                     //点读取到的数据不为空时，把读取的数据输出到窗口文本区中
@@ -72,14 +72,44 @@ public class chatClient {
 
     }
     //这是聊天输入框的后台处理，当按了发送后，会把输入框中的数据发送出去
-    public void send(String out) {
+    public void send(String identifier, String out)
+    {
         if(writer != null) {
-            writer.write(out+"\n");
+            writer.write(identifier);
             writer.flush();//写完数据后必须刷新缓存区，才能发出去
+            writer.write(out + "\n");
+            writer.flush();
         }else {
             ChatWindow.chatMessageField.recv("system", "connection refused");
 //            ChatWindow.chatTextArea.appendText("当前连接已断开");
         }
+    }
+
+    public void sendFile(String filePath)
+    {
+        String fileIdentifier = "file:";
+        try {
+            fileWriter.write(fileIdentifier.getBytes());
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        File fileToSend = new File(filePath);
+
+        try (FileInputStream fileInputStream = new FileInputStream(fileToSend))
+        {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1)
+            {
+                fileWriter.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
     }
 }
 

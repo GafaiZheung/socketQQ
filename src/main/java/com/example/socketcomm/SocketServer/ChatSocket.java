@@ -3,9 +3,7 @@ package com.example.socketcomm.SocketServer;
 
 import com.example.socketcomm.Jdbc;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -36,16 +34,34 @@ public class ChatSocket extends Thread {
             BufferedReader br = new BufferedReader(
                     new InputStreamReader(
                             socket.getInputStream(),"UTF-8"));
+
             while (true)
             {
-                String line = br.readLine();
-                Jdbc mysql = new Jdbc();
-                String[] socketMsg = line.split(",");
-                //连接建立报文格式:"connect, userID"
-                //消息报文格式:"msg, recvUserID, <message>"
-                if (socketMsg[0].equals("connect"))
+                InputStream in = socket.getInputStream();
+                byte[] identifierBytes = new byte[5];
+                int bytesRead = in.read(identifierBytes);
+                String identifier = new String(identifierBytes, 0, bytesRead);
+
+                if("file:".equals(identifier))
                 {
-                    this.setUserID(socketMsg[1]);
+                    try (FileOutputStream fileOutputStream = new FileOutputStream("received_file.txt"))
+                    {
+                        byte[] buffer = new byte[1024];
+                        while ((bytesRead = in.read(buffer)) != -1) {
+                            fileOutputStream.write(buffer, 0, bytesRead);
+                        }
+                    }
+
+                    System.out.println("Received a file.");
+                }
+                else if ("cnct:".equals(identifier))
+                {
+                    String line = br.readLine();
+                    Jdbc mysql = new Jdbc();
+//                    System.out.println(line);
+                    String[] socketMsg = line.split(",");
+
+                    this.setUserID(socketMsg[0]);
                     System.out.println(this.getUserID() + " has connected to chatServer");
 
                     //上线获取所有的sendFail讯息
@@ -62,13 +78,29 @@ public class ChatSocket extends Thread {
                         }
                     }
                 }
-                else if(socketMsg[0].equals("msg"))
+                else if("mesg:".equals(identifier))
                 {
-                    System.out.println(this.getUserID() + " send to " + socketMsg[1] + ":" + socketMsg[2]);
+                    String line = br.readLine();
+                    Jdbc mysql = new Jdbc();
+                    String[] socketMsg = line.split(",");
+//                    System.out.println(line);
+                    System.out.println(this.getUserID() + " send to " + socketMsg[0] + ":" + socketMsg[1]);
                     mysql.Initialize(this.getUserID(), socketMsg[1]);
                     mysql.Initialize(socketMsg[1], this.getUserID());
-                    ServerManager.getServetManager().publish(this, socketMsg[1], this.getUserID(), socketMsg[2]);
+                    ServerManager.getServetManager().publish(this, socketMsg[0], this.getUserID(), socketMsg[1]);
                 }
+
+
+                //连接建立报文格式:"connect, userID"
+                //消息报文格式:"msg, recvUserID, <message>"
+//                if (socketMsg[0].equals("connect"))
+//                {
+//
+//                }
+//                else if(socketMsg[0].equals("msg"))
+//                {
+//
+//                }
             }
 
 //            //循环读取数据，当输入流的数据不为空时，把数据写发送到每一个客户端

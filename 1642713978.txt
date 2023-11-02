@@ -35,3 +35,5 @@ send,1,test2
 send,1,test3
 recv,xukang,test1
 recv,xukang,t3
+recv,xukang,333
+send,1,你好！

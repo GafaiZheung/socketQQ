@@ -13,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -302,7 +303,7 @@ public class ChatWindow extends Application
     {
         chatMessageField.send(currentUserNickName, inputTextField.getText());
 //        chatTextArea.appendText("entered:" + inputTextField.getText() + "\n");
-        chatClient.getCM().send("msg," + chatWithID + "," + inputTextField.getText());
+        chatClient.getCM().send("mesg:" ,chatWithID + "," + inputTextField.getText());
         inputTextField.setText("");
     }
 
@@ -378,7 +379,24 @@ public class ChatWindow extends Application
         scrollPane.setContent(infoCardBox);
 
         Rectangle chatScreen = new Rectangle(666, 360);
-        Rectangle functionBar = new Rectangle(666, 40);
+//        Rectangle functionBar = new Rectangle(666, 40);
+        Button sendFileButton = new Button("发送文件");
+        sendFileButton.setPrefHeight(30);
+        sendFileButton.setPadding(new Insets(0, 0, 0, 10));
+        sendFileButton.setStyle("-fx-background-color: #FFFFFF");
+
+        HBox functionBar = new HBox(10);
+        functionBar.setPrefHeight(40);
+        functionBar.setPrefWidth(666);
+        functionBar.getChildren().add(sendFileButton);
+        functionBar.setAlignment(Pos.CENTER_LEFT);
+        functionBar.setStyle("-fx-background-color: #FFFFFF");
+
+        sendFileButton.setOnMouseClicked(mouseEvent ->
+        {
+            openFileChooser(primaryStage);
+        });
+
 
 //        chatTextArea.setPrefWidth(666);
 //        chatTextArea.setPrefHeight(360);
@@ -390,7 +408,7 @@ public class ChatWindow extends Application
 
 
         chatScreen.setFill(Color.GRAY);
-        functionBar.setFill(Color.WHITE);
+//        functionBar.setFill(Color.WHITE);
 
         VBox rightBorderBox = new VBox();
         rightBorderBox.getChildren().add(chatTitle);
@@ -402,7 +420,7 @@ public class ChatWindow extends Application
 
         rightBorderBox.setAlignment(Pos.CENTER);
 
-        chatClient.getCM().send("connect," + currentUserID);
+        chatClient.getCM().send("cnct:" , currentUserID);
 
 
         HBox mainBox = new HBox();
@@ -419,6 +437,31 @@ public class ChatWindow extends Application
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
+    private void openFileChooser(Stage primaryStage) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose a File");
+
+        // 设置文件类型过滤器（可选）
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        // 显示文件选择对话框
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+        if (selectedFile != null) {
+            String filePath = selectedFile.getAbsolutePath();
+            System.out.println("Selected File: " + filePath);
+            chatClient.getCM().sendFile(filePath);
+            // 在这里你可以处理选择的文件，如读取、保存等操作
+        } else {
+            System.out.println("No file selected.");
+        }
+    }
+
 
     private int loginAction(ActionEvent event) throws IOException, InterruptedException {
         String IP = "127.0.0.1";
