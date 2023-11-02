@@ -42,52 +42,46 @@ public class ChatSocket extends Thread {
                 int bytesRead = in.read(identifierBytes);
                 String identifier = new String(identifierBytes, 0, bytesRead);
 
-                if("file:".equals(identifier))
-                {
-                    try (FileOutputStream fileOutputStream = new FileOutputStream("received_file.txt"))
-                    {
-                        byte[] buffer = new byte[1024];
-                        while ((bytesRead = in.read(buffer)) != -1) {
-                            fileOutputStream.write(buffer, 0, bytesRead);
+                switch (identifier) {
+                    case "file:" -> {
+                        try (FileOutputStream fileOutputStream = new FileOutputStream("received_file.txt")) {
+                            byte[] buffer = new byte[1024];
+                            while ((bytesRead = in.read(buffer)) != -1) {
+                                fileOutputStream.write(buffer, 0, bytesRead);
+                            }
                         }
+                        System.out.println("Received a file.");
                     }
-
-                    System.out.println("Received a file.");
-                }
-                else if ("cnct:".equals(identifier))
-                {
-                    String line = br.readLine();
-                    Jdbc mysql = new Jdbc();
+                    case "cnct:" -> {
+                        String line = br.readLine();
+                        Jdbc mysql = new Jdbc();
 //                    System.out.println(line);
-                    String[] socketMsg = line.split(",");
+                        String[] socketMsg = line.split(",");
 
-                    this.setUserID(socketMsg[0]);
-                    System.out.println(this.getUserID() + " has connected to chatServer");
+                        this.setUserID(socketMsg[0]);
+                        System.out.println(this.getUserID() + " has connected to chatServer");
 
-                    //上线获取所有的sendFail讯息
-                    ArrayList<String> sendID = mysql.get_friend_userID(this.getUserID());
-                    for (String value : sendID)
-                    {
-                        if (!this.getUserID().equals(value))
-                        {
-                            ArrayList<String> message = mysql.get_send_fail_message(value, this.getUserID());
-                            for (String s : message)
-                            {
-                                ServerManager.getServetManager().publish(this, this.getUserID(), value, s);
+                        //上线获取所有的sendFail讯息
+                        ArrayList<String> sendID = mysql.get_friend_userID(this.getUserID());
+                        for (String value : sendID) {
+                            if (!this.getUserID().equals(value)) {
+                                ArrayList<String> message = mysql.get_send_fail_message(value, this.getUserID());
+                                for (String s : message) {
+                                    ServerManager.getServetManager().publish(this, this.getUserID(), value, s);
+                                }
                             }
                         }
                     }
-                }
-                else if("mesg:".equals(identifier))
-                {
-                    String line = br.readLine();
-                    Jdbc mysql = new Jdbc();
-                    String[] socketMsg = line.split(",");
+                    case "mesg:" -> {
+                        String line = br.readLine();
+                        Jdbc mysql = new Jdbc();
+                        String[] socketMsg = line.split(",");
 //                    System.out.println(line);
-                    System.out.println(this.getUserID() + " send to " + socketMsg[0] + ":" + socketMsg[1]);
-                    mysql.Initialize(this.getUserID(), socketMsg[1]);
-                    mysql.Initialize(socketMsg[1], this.getUserID());
-                    ServerManager.getServetManager().publish(this, socketMsg[0], this.getUserID(), socketMsg[1]);
+                        System.out.println(this.getUserID() + " send to " + socketMsg[0] + ":" + socketMsg[1]);
+                        mysql.Initialize(this.getUserID(), socketMsg[1]);
+                        mysql.Initialize(socketMsg[1], this.getUserID());
+                        ServerManager.getServetManager().publish(this, socketMsg[0], this.getUserID(), socketMsg[1]);
+                    }
                 }
 
 
