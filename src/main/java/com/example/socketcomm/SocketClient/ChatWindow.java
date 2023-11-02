@@ -455,7 +455,11 @@ public class ChatWindow extends Application
         if (selectedFile != null) {
             String filePath = selectedFile.getAbsolutePath();
             System.out.println("Selected File: " + filePath);
-            chatClient.getCM().sendFile(filePath);
+            try {
+                new FileTransferClient().sendFile(filePath);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             // 在这里你可以处理选择的文件，如读取、保存等操作
         } else {
             System.out.println("No file selected.");
