@@ -1,10 +1,14 @@
 package com.example.socketcomm.SocketServer;
 
 
+import com.example.socketcomm.Jdbc;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
+
 //创建一个聊天socket继承自Thread类
 public class ChatSocket extends Thread {
     Socket socket;
@@ -35,6 +39,7 @@ public class ChatSocket extends Thread {
             while (true)
             {
                 String line = br.readLine();
+                Jdbc mysql = new Jdbc();
                 String[] socketMsg = line.split(",");
                 //连接建立报文格式:"connect, userID"
                 //消息报文格式:"msg, recvUserID, <message>"
@@ -42,11 +47,27 @@ public class ChatSocket extends Thread {
                 {
                     this.setUserID(socketMsg[1]);
                     System.out.println(this.getUserID() + " has connected to chatServer");
+
+                    //上线获取所有的sendFail讯息
+                    ArrayList<String> sendID = mysql.get_friend_userID(this.getUserID());
+                    for (String value : sendID)
+                    {
+                        if (!this.getUserID().equals(value))
+                        {
+                            ArrayList<String> message = mysql.get_send_fail_message(value, this.getUserID());
+                            for (String s : message)
+                            {
+                                ServerManager.getServetManager().publish(this, this.getUserID(), value, s);
+                            }
+                        }
+                    }
                 }
                 else if(socketMsg[0].equals("msg"))
                 {
                     System.out.println(this.getUserID() + " send to " + socketMsg[1] + ":" + socketMsg[2]);
-                    ServerManager.getServetManager().publish(this, socketMsg[1], this.getUserID() + "," + socketMsg[2]);
+                    mysql.Initialize(this.getUserID(), socketMsg[1]);
+                    mysql.Initialize(socketMsg[1], this.getUserID());
+                    ServerManager.getServetManager().publish(this, socketMsg[1], this.getUserID(), socketMsg[2]);
                 }
             }
 

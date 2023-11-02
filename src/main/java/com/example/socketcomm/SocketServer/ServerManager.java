@@ -1,5 +1,7 @@
 package com.example.socketcomm.SocketServer;
 
+import com.example.socketcomm.Jdbc;
+
 import java.util.Vector;
 
 public class ServerManager {
@@ -20,8 +22,12 @@ public class ServerManager {
         vector.remove(cs);
     }
     //把获取的消息发布给除自己以外的其他客户端
-    public void publish(ChatSocket cs, String recvUserID, String out)
+    public void publish(ChatSocket cs, String recvUserID, String sendUserID, String message)
     {
+        String out = sendUserID + "," + message;
+        boolean isSendSuccess = false;
+        Jdbc mysql = new Jdbc();
+
         for (int i = 0; i < vector.size(); i++)
         {
             ChatSocket csChatSocket = vector.get(i);
@@ -29,10 +35,17 @@ public class ServerManager {
             
             if (csChatSocket.getUserID().equals(recvUserID))
             {
+                mysql.set_message("send", sendUserID, recvUserID, message);
+                mysql.set_message("recv", recvUserID, sendUserID, message);
                 csChatSocket.out(out);
+                isSendSuccess = true;
             }
 //            if(!cs.equals(csChatSocket))
 //                csChatSocket.out(out);
+        }
+        if(!isSendSuccess)
+        {
+            mysql.set_message("sendFail", sendUserID, recvUserID, message);
         }
     }
 }

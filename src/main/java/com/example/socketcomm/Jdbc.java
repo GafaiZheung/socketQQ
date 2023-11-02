@@ -268,6 +268,51 @@ public class Jdbc {
     public void create_troop(String UserID) {
 
     }
+
+    public ArrayList<String> get_friend_userID(String ID)
+    {
+        ArrayList<String> As = new ArrayList<String>();
+        String s = new String();
+        try {
+            String sql = "select * from f_" + ID;
+            ResultSet rs = statement.executeQuery(sql);
+            while(rs.next()) {
+                s = "";
+                s += rs.getString("UserID");
+                As.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return As;
+    }
+
+    public ArrayList<String> get_send_fail_message(String SendID, String ReceiverID)
+    {
+        ArrayList<String> As = new ArrayList<String>();
+        String s = new String();
+        try {
+            String sql = "select * from f_" + SendID + "_" + ReceiverID + " where status = 'sendFail'";
+            ResultSet rs = statement.executeQuery(sql);
+            while(rs.next()) {
+                s = "";
+                s += rs.getString("message");
+                As.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            String sql = "update f_" + SendID + "_" + ReceiverID + " set status = 'send' where status = 'sendFail'";
+            int rs = statement.executeUpdate(sql);
+            if(rs > 0) {
+                System.out.println("更新成功");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return As;
+    }
 }
 
 
