@@ -4,14 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.Socket;
 
-/**
- * 文件传输Client端<br>
- * 功能说明：
- *
- * @author 大智若愚的小懂
- * @Date 2016年09月01日
- * @version 1.0
- */
 public class FileTransferClient extends Socket {
 
     private static final String SERVER_IP = "127.0.0.1"; // 服务端IP
@@ -60,7 +52,7 @@ public class FileTransferClient extends Socket {
                     dos.write(bytes, 0, length);
                     dos.flush();
                     progress += length;
-                    System.out.print("| " + (100*progress/file.length()) + "% |");
+                    ChatWindow.chatMessageField.progressBar((double) (progress) /file.length());
                 }
                 System.out.println();
                 System.out.println("======== 文件传输成功 ========");

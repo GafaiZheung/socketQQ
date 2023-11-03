@@ -9,14 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DecimalFormat;
 
-/**
- * 文件传输Server端<br>
- * 功能说明：
- *
- * @author 大智若愚的小懂
- * @Date 2016年09月01日
- * @version 1.0
- */
+
 public class FileTransferServer extends ServerSocket {
 
     private static final int SERVER_PORT = 8899; // 服务端端口

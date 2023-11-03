@@ -4,11 +4,13 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -24,6 +26,7 @@ public class MessageField extends ScrollPane
 {
     FileWriter fileWriter;
     FileReader fileReader;
+    CustomProgressBar bar;
 
     private VBox messageCardBox = new VBox(10);
     public MessageField()
@@ -76,6 +79,36 @@ public class MessageField extends ScrollPane
         this.setVvalue(1.0);
     }
 
+    public void sendFile(String nickName, String fileName, String fileSize)
+    {
+        try {
+            fileWriter = new FileWriter(filePath, true);
+            fileWriter.write("sendFile," + nickName + "," + fileName + "," + fileSize + "\n");
+            fileWriter.close();
+        }catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        SendFileCard card = new SendFileCard(nickName, fileName, fileSize);
+        card.setPadding(new Insets(10, 0, 10, 0));
+        messageCardBox.getChildren().add(card);
+
+        bar = new CustomProgressBar();
+        bar.setPadding(new Insets(10, 0, 10, 0));
+        messageCardBox.getChildren().add(bar);
+        this.setVvalue(1.0);
+    }
+
+    public void progressBar(double progress)
+    {
+//        if (progress == 1.0)
+//            messageCardBox.getChildren().remove(bar);
+//        else
+            bar.setProgress(progress);
+
+        this.setVvalue(1.0);
+    }
+
     public void clear()
     {
         messageCardBox.getChildren().clear();
@@ -93,14 +126,22 @@ public class MessageField extends ScrollPane
 
             while ((line = bufferedReader.readLine()) != null) {
                 String[] str = line.split(",");
-                if (str[0].equals("send")) {
-                    SendMessageCard card = new SendMessageCard(str[1], str[2]);
-                    card.setPadding(new Insets(10, 0, 10, 0));
-                    messageCards.add(card);
-                } else if (str[0].equals("recv")) {
-                    RecvMessageCard card = new RecvMessageCard(str[1], str[2]);
-                    card.setPadding(new Insets(10, 0, 10, 0));
-                    messageCards.add(card);
+                switch (str[0]) {
+                    case "send" -> {
+                        SendMessageCard card = new SendMessageCard(str[1], str[2]);
+                        card.setPadding(new Insets(10, 0, 10, 0));
+                        messageCards.add(card);
+                    }
+                    case "recv" -> {
+                        RecvMessageCard card = new RecvMessageCard(str[1], str[2]);
+                        card.setPadding(new Insets(10, 0, 10, 0));
+                        messageCards.add(card);
+                    }
+                    case "sendFile" -> {
+                        SendFileCard card = new SendFileCard(str[1], str[2], str[3]);
+                        card.setPadding(new Insets(10, 0, 10, 0));
+                        messageCards.add(card);
+                    }
                 }
             }
 
@@ -212,5 +253,110 @@ class SendMessageCard extends HBox
         this.setAlignment(Pos.CENTER_RIGHT);
         this.setPrefHeight(60);
         this.setPrefWidth(640);
+    }
+}
+
+class SendFileCard extends HBox
+{
+    public SendFileCard(String nickName, String fileName, String fileSize)
+    {
+        Circle userImage = new Circle(24);
+        userImage.setFill(Color.rgb(204, 204, 204));
+
+        VBox imageBox = new VBox();
+        imageBox.setStyle("-fx-background-color: #FFFFFF");
+        imageBox.getChildren().add(userImage);
+        imageBox.setPrefWidth(60);
+        imageBox.setPrefHeight(120);
+        imageBox.setAlignment(Pos.TOP_CENTER);
+        imageBox.setPadding(new Insets(6));
+
+        Label name = new Label(nickName);
+        Label file = new Label(fileName);
+        Label size = new Label(fileSize);
+
+        VBox fileInfoBox = new VBox();
+        fileInfoBox.getChildren().addAll(file, size);
+        fileInfoBox.setMinHeight(60);
+        fileInfoBox.setPrefWidth(180);
+        fileInfoBox.setAlignment(Pos.CENTER_LEFT);
+        fileInfoBox.setPadding(new Insets(0, 0, 0, 20));
+
+        Rectangle fileIcon = new Rectangle(40, 40);
+        fileIcon.setFill(Color.rgb(255, 255, 255));
+        VBox fileIconBox = new VBox();
+        fileIconBox.getChildren().addAll(fileIcon);
+        fileIconBox.setAlignment(Pos.CENTER);
+        fileIconBox.setPrefWidth(60);
+        fileIconBox.setMinHeight(60);
+
+        HBox fileBox = new HBox();
+        fileBox.getChildren().addAll(fileInfoBox, fileIconBox);
+        fileBox.setStyle("-fx-background-color: #CCCCCC");
+
+        VBox leftSide = new VBox();
+        leftSide.getChildren().addAll(name,fileBox);
+        leftSide.setAlignment(Pos.CENTER_RIGHT);
+        leftSide.setPrefHeight(120);
+
+        this.getChildren().addAll(leftSide, imageBox);
+        this.setAlignment(Pos.CENTER_RIGHT);
+        this.setPrefHeight(120);
+        this.setPrefWidth(640);
+    }
+}
+
+class CustomProgressBar extends HBox {
+    private double progress;
+    private Label progressLabel;
+
+    public CustomProgressBar() {
+        progress = 0;
+        progressLabel = new Label("0%"); // 初始显示为0%
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        int numberOfRectangles = 400; // 进度条由多少个矩形组成
+        double rectangleWidth = 1; // 每个矩形的宽度
+        double totalWidth = numberOfRectangles * rectangleWidth;
+
+        for (int i = 0; i < numberOfRectangles; i++) {
+            Rectangle rectangle = new Rectangle(rectangleWidth, 2); // 矩形的高度
+            rectangle.setFill(Color.BLUE); // 设置矩形的颜色
+
+            getChildren().add(rectangle);
+        }
+
+        setAlignment(Pos.CENTER);
+
+        setPrefWidth(totalWidth);
+        setHeight(20);
+
+        getChildren().add(progressLabel);
+    }
+
+    public void setProgress(double progress) {
+        if (progress >= 0 && progress <= 1) {
+            this.progress = progress;
+            updateProgressDisplay();
+        }
+    }
+
+    private void updateProgressDisplay() {
+        int numberOfRectangles = getChildren().size() - 1; // 减去Label
+        int filledRectangles = (int) (progress * numberOfRectangles);
+
+        for (int i = 0; i < numberOfRectangles; i++) {
+            Rectangle rectangle = (Rectangle) getChildren().get(i);
+            if (i < filledRectangles) {
+                rectangle.setFill(Color.GREEN); // 已完成的部分颜色
+            } else {
+                rectangle.setFill(Color.GRAY); // 未完成的部分颜色
+            }
+        }
+
+        int percentage = (int) (progress * 100);
+        progressLabel.setText(percentage + "%");
     }
 }

@@ -27,3 +27,30 @@ send,1,111
 recv,1,111
 send,1,111
 recv,1,111
+send,1,111
+send,1,22
+send,1,111
+recv,1,111
+send,1,文件！
+recv,1,文件！
+sendFile,1,111.txt,432 Bytes
+sendFile,1,genshin.txt,243 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,genshin.txt,243 Bytes
+send,1,111
+recv,1,111
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,genshin.txt,243 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,genshin.txt,243 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,taylor.jpg,582 KB
+sendFile,1,4月8日.mp4,46 MB

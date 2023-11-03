@@ -35,8 +35,11 @@ public class ServerManager {
             
             if (csChatSocket.getUserID().equals(recvUserID))
             {
-                mysql.set_message("send", sendUserID, recvUserID, message);
-                mysql.set_message("recv", recvUserID, sendUserID, message);
+                if(!sendUserID.equals(recvUserID))
+                {
+                    mysql.set_message("send", sendUserID, recvUserID, message);
+                    mysql.set_message("recv", recvUserID, sendUserID, message);
+                }
                 csChatSocket.out(out);
                 isSendSuccess = true;
             }

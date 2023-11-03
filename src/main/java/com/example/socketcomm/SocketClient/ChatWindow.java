@@ -455,6 +455,7 @@ public class ChatWindow extends Application
         if (selectedFile != null) {
             String filePath = selectedFile.getAbsolutePath();
             System.out.println("Selected File: " + filePath);
+            chatMessageField.sendFile(currentUserNickName, selectedFile.getName(), fileSizeFormatter(selectedFile.length()));
             try {
                 new FileTransferClient().sendFile(filePath);
             } catch (Exception e) {
@@ -465,6 +466,21 @@ public class ChatWindow extends Application
             System.out.println("No file selected.");
         }
     }
+
+    private String fileSizeFormatter(long fileSize)
+    {
+        String[] sizeUnits = {"Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+        int unitIndex = 0;
+
+        while (fileSize > 1024 && unitIndex < sizeUnits.length - 1) {
+            fileSize /= 1024;
+            unitIndex++;
+        }
+
+        return String.format("%d %s", fileSize, sizeUnits[unitIndex]);
+    }
+
+
 
 
     private int loginAction(ActionEvent event) throws IOException, InterruptedException {
