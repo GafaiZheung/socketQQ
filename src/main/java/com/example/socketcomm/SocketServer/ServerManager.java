@@ -28,21 +28,20 @@ public class ServerManager {
         boolean isSendSuccess = false;
         Jdbc mysql = new Jdbc();
 
-        for (int i = 0; i < vector.size(); i++)
-        {
-            ChatSocket csChatSocket = vector.get(i);
+        for (ChatSocket csChatSocket : vector) {
             //把vector中的每一个个体与传进来的线程进行比较，如果不是自己则发送
-            
-            if (csChatSocket.getUserID().equals(recvUserID))
+            if(csChatSocket.getUserID() != null)
             {
-                if(!sendUserID.equals(recvUserID))
-                {
-                    mysql.set_message("send", sendUserID, recvUserID, message);
-                    mysql.set_message("recv", recvUserID, sendUserID, message);
+                if (csChatSocket.getUserID().equals(recvUserID)) {
+                    if (!sendUserID.equals(recvUserID)) {
+                        mysql.set_message("send", sendUserID, recvUserID, message);
+                        mysql.set_message("recv", recvUserID, sendUserID, message);
+                    }
+                    csChatSocket.out(out);
+                    isSendSuccess = true;
                 }
-                csChatSocket.out(out);
-                isSendSuccess = true;
             }
+
 //            if(!cs.equals(csChatSocket))
 //                csChatSocket.out(out);
         }

@@ -40,3 +40,20 @@ send,1,你好！
 send,1,test1
 send,1,test2
 send,1,test3
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,genshin.txt,243 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+send,1,111
+send,1,你好！
+recv,xukang,你好！
+sendFile,1,111.txt,432 Bytes
+sendFile,1,111.txt,432 Bytes
+recv,xukang,111
+send,1,222

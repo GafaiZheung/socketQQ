@@ -80,6 +80,7 @@ public class ChatWindow extends Application
                 if(loginAction(actionEvent) == 1)
                 {
                     chatClient.getCM().connect("127.0.0.1");
+//                    FileTransferClient.getFtc().connect("127.0.0.1",8899);
                     chatScene(primaryStage);
                 }
                 else if (loginAction(actionEvent) == 255)
@@ -145,7 +146,7 @@ public class ChatWindow extends Application
 
     void forgetButton(Stage primaryStage)
     {
-        ;
+
     }
 
     void registerScene(Stage primaryStage)
@@ -392,10 +393,7 @@ public class ChatWindow extends Application
         functionBar.setAlignment(Pos.CENTER_LEFT);
         functionBar.setStyle("-fx-background-color: #FFFFFF");
 
-        sendFileButton.setOnMouseClicked(mouseEvent ->
-        {
-            openFileChooser(primaryStage);
-        });
+        sendFileButton.setOnMouseClicked(mouseEvent -> openFileChooser(primaryStage));
 
 
 //        chatTextArea.setPrefWidth(666);
@@ -457,7 +455,7 @@ public class ChatWindow extends Application
             System.out.println("Selected File: " + filePath);
             chatMessageField.sendFile(currentUserNickName, selectedFile.getName(), fileSizeFormatter(selectedFile.length()));
             try {
-                new FileTransferClient().sendFile(filePath);
+                FileTransferClient.getFtc().sendFile(filePath);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
