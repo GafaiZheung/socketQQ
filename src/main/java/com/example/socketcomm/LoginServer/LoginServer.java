@@ -29,21 +29,38 @@ public class LoginServer {
                     // 数据库已实现
                     String msg = readData(socket.getInputStream());
                     String[] strmsg = msg.split(",");
-                    if (strmsg[0].equals("login"))
-                    {
-                        OutputStream out = socket.getOutputStream();
-                        if(mysql.check_number(strmsg[1], strmsg[2])) out.write(1);
-                        else out.write(-1);
-                    }
-                    else if(strmsg[0].equals("register"))
-                    {
-                        OutputStream out = socket.getOutputStream();
-                        int num;
-                        do
-                        {
-                            num = new Random().nextInt(10000) + 10000;
-                        } while (!mysql.update_qq(String.valueOf(num), strmsg[1], strmsg[2], strmsg[3]));
-                        out.write(String.valueOf(num).getBytes());
+                    switch (strmsg[0]) {
+                        case "login" -> {
+                            OutputStream out = socket.getOutputStream();
+                            if (mysql.check_number(strmsg[1], strmsg[2])) out.write(1);
+                            else out.write(-1);
+                        }
+                        case "register" -> {
+                            OutputStream out = socket.getOutputStream();
+                            int num;
+                            do {
+                                num = new Random().nextInt(10000) + 10000;
+                            } while (!mysql.update_qq(String.valueOf(num), strmsg[1], strmsg[2], strmsg[3]));
+                            out.write(String.valueOf(num).getBytes());
+                        }
+                        case "check" -> {
+                            OutputStream out = socket.getOutputStream();
+                            //数据库功能
+                            if(mysql.checkUid(strmsg[1])) out.write(1);
+                            else out.write(-1);
+                        }
+                        case "verify" -> {
+                            OutputStream out = socket.getOutputStream();
+                            //数据库功能
+                            if(mysql.checkInfo(strmsg[1], strmsg[2])) out.write(1);
+                            else out.write(-1);
+                        }
+                        case "reset" -> {
+                            OutputStream out = socket.getOutputStream();
+                            //数据库功能
+                            if(mysql.updatePassword(strmsg[1], strmsg[2])) out.write(1);
+                            else out.write(-1);
+                        }
                     }
                     socket.close();
                 } catch (IOException e) {

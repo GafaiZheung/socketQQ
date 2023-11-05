@@ -57,10 +57,28 @@ public class FileTransferClient {
                     String fileName = new String(fileNameBytes, StandardCharsets.UTF_8);
                     long fileLength = dis.readLong();
 
+                    int recvIDLength = dis.readInt();
+                    byte[] recvIDBytes = new byte[recvIDLength];
+                    dis.readFully(recvIDBytes);
+                    String recvID = new String(recvIDBytes, StandardCharsets.UTF_8);
+
+                    System.out.println(recvID);
+
+                    int userIDLength = dis.readInt();
+                    byte[] userIDBytes = new byte[userIDLength];
+                    dis.readFully(userIDBytes);
+                    String sendID = new String(userIDBytes, StandardCharsets.UTF_8);
+
+                    System.out.println(sendID);
+
                     File directory = new File("./clientRecv");
                     if (!directory.exists())
                     {
-                        directory.mkdir();
+                        if (directory.mkdir())
+                        {
+                            System.out.println("create success");
+                        }
+                        else System.out.println("fail");
                     }
 
                     File file = new File(directory.getAbsolutePath() + File.separatorChar + fileName);
@@ -73,9 +91,15 @@ public class FileTransferClient {
                         fos.write(bytes, 0, bytesRead);
                         fos.flush();
                     }
-                    System.out.println("======== 文件接收成功 [File Name：" + fileName + "] [Size：" + getFormatFileSize(fileLength) + "] ========");
+                    System.out.println("======== 文件接收成功 [File Name：" + fileName + "]========");
+                    client.close();
+
+//                    if(!recvID.equals(ChatWindow.currentUserID))
+//                        file.delete();
                 } catch (Exception e) {
                     e.printStackTrace();
+                }finally {
+                    connect(serverIp, serverPort);
                 }
             }
         }.start();

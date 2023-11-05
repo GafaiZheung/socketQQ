@@ -99,6 +99,23 @@ public class MessageField extends ScrollPane
         this.setVvalue(1.0);
     }
 
+    public void recvFile(String nickName, String fileName, String fileSize)
+    {
+        try {
+            fileWriter = new FileWriter(filePath, true);
+            fileWriter.write("recvFile," + nickName + "," + fileName + "," + fileSize + "\n");
+            fileWriter.close();
+        }catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        RecvFileCard card = new RecvFileCard(nickName, fileName, fileSize);
+        card.setPadding(new Insets(10, 0, 10, 0));
+        messageCardBox.getChildren().add(card);
+
+        this.setVvalue(1.0);
+    }
+
     public void progressBar(double progress)
     {
 //        if (progress == 1.0)
@@ -139,6 +156,11 @@ public class MessageField extends ScrollPane
                     }
                     case "sendFile" -> {
                         SendFileCard card = new SendFileCard(str[1], str[2], str[3]);
+                        card.setPadding(new Insets(10, 0, 10, 0));
+                        messageCards.add(card);
+                    }
+                    case "recvFile" -> {
+                        RecvFileCard card = new RecvFileCard(str[1], str[2], str[3]);
                         card.setPadding(new Insets(10, 0, 10, 0));
                         messageCards.add(card);
                     }
@@ -301,6 +323,56 @@ class SendFileCard extends HBox
 
         this.getChildren().addAll(leftSide, imageBox);
         this.setAlignment(Pos.CENTER_RIGHT);
+        this.setPrefHeight(120);
+        this.setPrefWidth(640);
+    }
+}
+
+class RecvFileCard extends HBox
+{
+    public RecvFileCard(String nickName, String fileName, String fileSize)
+    {
+        Circle userImage = new Circle(24);
+        userImage.setFill(Color.rgb(204, 204, 204));
+
+        VBox imageBox = new VBox();
+        imageBox.setStyle("-fx-background-color: #FFFFFF");
+        imageBox.getChildren().add(userImage);
+        imageBox.setPrefWidth(60);
+        imageBox.setPrefHeight(120);
+        imageBox.setAlignment(Pos.TOP_CENTER);
+        imageBox.setPadding(new Insets(6));
+
+        Label name = new Label(nickName);
+        Label file = new Label(fileName);
+        Label size = new Label(fileSize);
+
+        VBox fileInfoBox = new VBox();
+        fileInfoBox.getChildren().addAll(file, size);
+        fileInfoBox.setMinHeight(60);
+        fileInfoBox.setPrefWidth(180);
+        fileInfoBox.setAlignment(Pos.CENTER_LEFT);
+        fileInfoBox.setPadding(new Insets(0, 0, 0, 20));
+
+        Rectangle fileIcon = new Rectangle(40, 40);
+        fileIcon.setFill(Color.rgb(255, 255, 255));
+        VBox fileIconBox = new VBox();
+        fileIconBox.getChildren().addAll(fileIcon);
+        fileIconBox.setAlignment(Pos.CENTER);
+        fileIconBox.setPrefWidth(60);
+        fileIconBox.setMinHeight(60);
+
+        HBox fileBox = new HBox();
+        fileBox.getChildren().addAll(fileInfoBox, fileIconBox);
+        fileBox.setStyle("-fx-background-color: #CCCCCC");
+
+        VBox leftSide = new VBox();
+        leftSide.getChildren().addAll(name,fileBox);
+        leftSide.setAlignment(Pos.CENTER_RIGHT);
+        leftSide.setPrefHeight(120);
+
+        this.getChildren().addAll(imageBox, leftSide);
+        this.setAlignment(Pos.CENTER_LEFT);
         this.setPrefHeight(120);
         this.setPrefWidth(640);
     }

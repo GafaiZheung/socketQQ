@@ -7,7 +7,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -20,10 +23,12 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class ChatWindow extends Application
 {
+    public static String serverIP = "127.0.0.1";
     public static chatTitle chatTitle = new chatTitle("test");
     public static MessageField chatMessageField = new MessageField();
     public static TextArea chatTextArea = new TextArea();
@@ -56,8 +61,8 @@ public class ChatWindow extends Application
         focusLabel.setOpacity(0); // 使Label透明
 
 
-        userIDField.setPromptText("userID");
-        passWDField.setPromptText("password");
+        userIDField.setPromptText("账号");
+        passWDField.setPromptText("密码");
 
         passWDField.setOnAction(null);
 
@@ -79,8 +84,8 @@ public class ChatWindow extends Application
                 //                System.out.println(loginAction(actionEvent));
                 if(loginAction(actionEvent) == 1)
                 {
-                    chatClient.getCM().connect("127.0.0.1");
-//                    FileTransferClient.getFtc().connect("127.0.0.1",8899);
+                    chatClient.getCM().connect("192.168.123.113");
+                    FileTransferClient.getFtc().connect("192.168.123.113",8899);
                     chatScene(primaryStage);
                 }
                 else if (loginAction(actionEvent) == 255)
@@ -98,6 +103,7 @@ public class ChatWindow extends Application
                 focusLabel.setOpacity(1);
                 focusLabel.setText("无法连接到登录服务器");
                 currentUserID = null;
+//                e.printStackTrace();
             }
             catch (IOException | InterruptedException e)
             {
@@ -112,8 +118,8 @@ public class ChatWindow extends Application
         loginTextBox.setPrefHeight(150);
         loginTextBox.setPrefWidth(250);
 
-        Button registerButton = new Button("register");
-        Button forgetButton = new Button("forget passwd?");
+        Button registerButton = new Button("注册账号");
+        Button forgetButton = new Button("忘记密码");
 
         registerButton.setPrefHeight(40);
         forgetButton.setPrefHeight(40);
@@ -124,6 +130,11 @@ public class ChatWindow extends Application
         registerButton.setOnMouseClicked(mouseEvent ->
         {
             registerScene(primaryStage);
+        });
+
+        forgetButton.setOnMouseClicked(mouseEvent ->
+        {
+            forgetScene(primaryStage);
         });
 
 
@@ -139,15 +150,386 @@ public class ChatWindow extends Application
         loginWindowBox.setStyle("-fx-background-color: #FFFFFF");
 
         Scene scene = new Scene(loginWindowBox, 250, 340);
-        primaryStage.setTitle("register & login");
+        primaryStage.setTitle("简易聊天器");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    void forgetButton(Stage primaryStage)
+    // 忘记密码界面
+    void forgetScene(Stage primaryStage)
     {
+        Label focusLabel = new Label("");
+        focusLabel.setOpacity(0); // 使Label透明
 
+        TextField uidField = new TextField();
+        uidField.setPromptText("账号");
+        uidField.setPrefHeight(45);
+        uidField.setMaxWidth(240);
+
+        Button confirmButton = new Button("查找");
+        confirmButton.setMaxWidth(240);
+        confirmButton.setPrefWidth(90);
+        confirmButton.setPrefHeight(45);
+        confirmButton.setStyle("-fx-background-color: #CCCCCC");
+
+        confirmButton.setOnAction(null);
+
+
+        confirmButton.setOnAction(actionEvent -> {
+            String uid = uidField.getText();
+
+            // 把uid传到服务端，再通过服务端调用Jdbc.checkUid(uid)返回boolean
+            // 服务端若收到true则传1，否则传255
+            // 传1跳转到confirmScene(uid, primaryStage)，否则提示错误信息
+            if (checkIsResist(uid) == 1)
+                confirmScene(uid, primaryStage);
+            else
+            {
+                focusLabel.setText("账号不存在");
+                focusLabel.setOpacity(1);
+            }
+        });
+
+        Button backButton = new Button("返回");
+        backButton.setMaxWidth(240);
+        backButton.setPrefWidth(90);
+        backButton.setPrefHeight(45);
+        backButton.setStyle("-fx-background-color: #CCCCCC");
+        backButton.setOnMouseClicked(mouseEvent ->
+        {
+            loginScene(primaryStage);
+        });
+
+        HBox bottomBox = new HBox(20);
+        bottomBox.getChildren().addAll(backButton, confirmButton);
+        bottomBox.setAlignment(Pos.CENTER);
+
+        VBox vBox = new VBox(20);
+        vBox.getChildren().addAll(focusLabel, uidField, bottomBox);
+        vBox.setStyle("-fx-background-color: #FFFFFF");
+        vBox.setAlignment(Pos.CENTER);
+
+        uidField.setFocusTraversable(false);
+        focusLabel.setFocusTraversable(true);
+
+        Scene scene = new Scene(vBox, 260, 180);
+
+        primaryStage.setTitle("忘记密码");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
+
+    // 身份验证界面
+    void confirmScene(String uid, Stage primaryStage)
+    {
+        Label focusLabel = new Label("");
+        focusLabel.setOpacity(0); // 使Label透明
+
+        TextField nickNameField = new TextField();
+        nickNameField.setPromptText("昵称");
+        nickNameField.setPrefHeight(45);
+        nickNameField.setMaxWidth(240);
+
+        TextField phoneNumField = new TextField();
+        phoneNumField.setPromptText("手机号");
+        phoneNumField.setPrefHeight(45);
+        phoneNumField.setMaxWidth(240);
+
+        Button confirmButton = new Button("验证");
+        confirmButton.setMaxWidth(240);
+        confirmButton.setPrefWidth(90);
+        confirmButton.setPrefHeight(45);
+        confirmButton.setStyle("-fx-background-color: #CCCCCC");
+
+        confirmButton.setOnAction(null);
+
+        confirmButton.setOnAction(actionEvent -> {
+            String nickName = nickNameField.getText();
+            String phoneNum = phoneNumField.getText();
+            // 把uid, nickName, phoneNum传到服务端，再通过服务端调用Jdbc.checkInfo(uid, nickName, phoneNum)返回boolean
+            // 服务端若收到true则传1，否则传255
+            // 传1跳转到confirmPasswordScene(uid, primaryStage)，否则提示错误信息
+
+            if (verify(uid, phoneNum) == 1)
+                confirmPasswordScene(uid, primaryStage);
+            else
+            {
+                focusLabel.setText("账号信息错误，请重新输入");
+                focusLabel.setOpacity(1);
+            }
+        });
+
+        Button backButton = new Button("返回");
+        backButton.setMaxWidth(240);
+        backButton.setPrefWidth(90);
+        backButton.setPrefHeight(45);
+        backButton.setStyle("-fx-background-color: #CCCCCC");
+        backButton.setOnMouseClicked(mouseEvent ->
+        {
+            forgetScene(primaryStage);
+        });
+
+        HBox bottomBox = new HBox(20);
+        bottomBox.getChildren().addAll(backButton, confirmButton);
+        bottomBox.setAlignment(Pos.CENTER);
+
+        VBox vBox = new VBox(20);
+        vBox.getChildren().addAll(focusLabel, nickNameField, phoneNumField, bottomBox);
+        vBox.setStyle("-fx-background-color: #FFFFFF");
+        vBox.setAlignment(Pos.CENTER);
+
+        nickNameField.setFocusTraversable(false);
+        focusLabel.setFocusTraversable(true);
+
+        Scene scene = new Scene(vBox, 260, 280);
+
+        primaryStage.setTitle("身份验证");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    // 重置密码界面
+    void confirmPasswordScene(String uid, Stage primaryStage)
+    {
+        Label focusLabel = new Label("");
+        focusLabel.setOpacity(0); // 使Label透明
+
+        TextField passwordField = new PasswordField();
+        passwordField.setPromptText("新密码");
+        passwordField.setPrefHeight(45);
+        passwordField.setMaxWidth(240);
+
+        TextField confirmPasswordField = new PasswordField();
+        confirmPasswordField.setPromptText("确认密码");
+        confirmPasswordField.setPrefHeight(45);
+        confirmPasswordField.setMaxWidth(240);
+
+        Button confirmButton = new Button("确认");
+        confirmButton.setMaxWidth(240);
+        confirmButton.setPrefWidth(90);
+        confirmButton.setPrefHeight(45);
+        confirmButton.setStyle("-fx-background-color: #CCCCCC");
+
+        confirmButton.setOnAction(null);
+
+        confirmButton.setOnAction(actionEvent -> {
+            String password = passwordField.getText();
+            String confirmPassword = confirmPasswordField.getText();
+            // 把传到服务端，再通过服务端调用Jdbc.updatePassword(uid, password)返回boolean
+            // 服务端若收到true则传1，否则传255
+            if (password == null)
+            {
+                focusLabel.setText("请输入密码");
+                focusLabel.setOpacity(1);
+            }
+            else if (confirmPassword == null)
+            {
+                focusLabel.setText("请输入确认密码");
+                focusLabel.setOpacity(1);
+            }
+            else if (!password.equals(confirmPassword))
+            {
+                focusLabel.setText("密码与确认密码不符");
+                focusLabel.setOpacity(1);
+            }
+            else
+            {
+                if(reset(uid, password) == 1)
+                {
+//                    loginScene(primaryStage);
+                    Label finalText = new Label("密码重置成功");
+
+                    Button button = new Button("关闭");
+                    button.setPrefHeight(45);
+                    button.setPrefWidth(100);
+                    button.setStyle("-fx-background-color: #CCCCCC;");
+
+                    VBox box = new VBox(20);
+                    box.getChildren().addAll(finalText, button);
+                    box.setStyle("-fx-background-color: #FFFFFF");
+                    box.setAlignment(Pos.CENTER);
+
+                    button.setOnAction(ActionEvent -> {
+                        loginScene(primaryStage);
+                    });
+
+                    Scene finalScene = new Scene(box, 200, 100);
+                    primaryStage.setScene(finalScene);
+                    primaryStage.show();
+                }
+
+            }
+        });
+
+        Button backButton = new Button("返回");
+        backButton.setMaxWidth(240);
+        backButton.setPrefWidth(90);
+        backButton.setPrefHeight(45);
+        backButton.setStyle("-fx-background-color: #CCCCCC");
+        backButton.setOnMouseClicked(mouseEvent ->
+        {
+            confirmScene(uid, primaryStage);
+        });
+
+        HBox bottomBox = new HBox(20);
+        bottomBox.getChildren().addAll(backButton, confirmButton);
+        bottomBox.setAlignment(Pos.CENTER);
+
+        VBox vBox = new VBox(20);
+        vBox.getChildren().addAll(focusLabel, passwordField, confirmPasswordField, bottomBox);
+        vBox.setStyle("-fx-background-color: #FFFFFF");
+        vBox.setAlignment(Pos.CENTER);
+
+        passwordField.setFocusTraversable(false);
+        focusLabel.setFocusTraversable(true);
+
+        Scene scene = new Scene(vBox, 260, 280);
+
+        primaryStage.setTitle("重置密码");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    int checkIsResist(String userID)
+    {
+        String IP = serverIP;
+
+        String checkMsg = "check," + userID;
+        AtomicInteger back = new AtomicInteger();
+
+        try {
+            Socket socket = new Socket(IP, 8080);
+
+            // 异步发送数据
+            Thread sendThread = new Thread(() -> {
+                try {
+                    OutputStream out = socket.getOutputStream();
+                    String dataToSend = checkMsg + "\n"; // 添加换行符
+                    out.write(dataToSend.getBytes());
+                    out.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // 异步接收数据
+            Thread receiveThread = new Thread(() -> {
+                try {
+                    InputStream in = socket.getInputStream();
+                    //这里不要sout测试temp是什么，会变得不幸
+                    back.set(in.read());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            sendThread.start();
+            receiveThread.start();
+
+            // 等待异步线程完成
+            sendThread.join();
+            receiveThread.join();
+
+            socket.close();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return back.get();
+    }
+
+    int verify(String userID, String phoneNumber)
+    {
+        String IP = serverIP;
+
+        String checkMsg = "verify," + userID + "," + phoneNumber;
+        AtomicInteger back = new AtomicInteger();
+
+        try {
+            Socket socket = new Socket(IP, 8080);
+
+            // 异步发送数据
+            Thread sendThread = new Thread(() -> {
+                try {
+                    OutputStream out = socket.getOutputStream();
+                    String dataToSend = checkMsg + "\n"; // 添加换行符
+                    out.write(dataToSend.getBytes());
+                    out.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // 异步接收数据
+            Thread receiveThread = new Thread(() -> {
+                try {
+                    InputStream in = socket.getInputStream();
+                    back.set(in.read());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            sendThread.start();
+            receiveThread.start();
+
+            // 等待异步线程完成
+            sendThread.join();
+            receiveThread.join();
+
+            socket.close();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return back.get();
+    }
+
+
+    int reset(String userID, String passWD)
+    {
+        String IP = serverIP;
+
+        String checkMsg = "reset," + userID + "," + passWD;
+        AtomicInteger back = new AtomicInteger();
+
+        try {
+            Socket socket = new Socket(IP, 8080);
+
+            // 异步发送数据
+            Thread sendThread = new Thread(() -> {
+                try {
+                    OutputStream out = socket.getOutputStream();
+                    String dataToSend = checkMsg + "\n"; // 添加换行符
+                    out.write(dataToSend.getBytes());
+                    out.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // 异步接收数据
+            Thread receiveThread = new Thread(() -> {
+                try {
+                    InputStream in = socket.getInputStream();
+                    back.set(in.read());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            sendThread.start();
+            receiveThread.start();
+
+            // 等待异步线程完成
+            sendThread.join();
+            receiveThread.join();
+
+            socket.close();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return back.get();
+    }
+
 
     void registerScene(Stage primaryStage)
     {
@@ -187,12 +569,13 @@ public class ChatWindow extends Application
         phoneNumField.setMaxWidth(240);
 
         Button confirmButton = new Button("确认");
+        confirmButton.setPrefWidth(90);
         confirmButton.setPrefHeight(45);
         confirmButton.setMaxWidth(240);
         confirmButton.setStyle("-fx-background-color: #CCCCCC");
 
         confirmButton.setOnAction(null);
-        
+
         confirmButton.setOnAction(actionEvent -> {
             String password = passwordField.getText();
             String confirmPassword =  confirmField.getText();
@@ -235,25 +618,39 @@ public class ChatWindow extends Application
             }
         });
 
+        Button backButton = new Button("返回");
+        backButton.setMaxWidth(240);
+        backButton.setPrefWidth(90);
+        backButton.setPrefHeight(45);
+        backButton.setStyle("-fx-background-color: #CCCCCC");
+        backButton.setOnAction(null);
+        backButton.setOnMouseClicked(mouseEvent ->
+        {
+            loginScene(primaryStage);
+        });
+
+        HBox bottomBox = new HBox(20);
+        bottomBox.getChildren().addAll(backButton, confirmButton);
+        bottomBox.setAlignment(Pos.CENTER);
+
         VBox vBox = new VBox(20);
-        vBox.getChildren().addAll(topBox, centreBox, confirmField, phoneNumField, confirmButton);
+        vBox.getChildren().addAll(topBox, centreBox, confirmField, phoneNumField, bottomBox);
         vBox.setStyle("-fx-background-color: #FFFFFF");
         vBox.setAlignment(Pos.CENTER);
 
         nickNameField.setFocusTraversable(false);
         focusLabel.setFocusTraversable(true);
 
-
         Scene scene = new Scene(vBox, 260, 410);
 
-        primaryStage.setTitle("register");
+        primaryStage.setTitle("注册账号");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     String registerAction(String nickName, String password, String phoneNumber)
     {
-        String IP = "127.0.0.1";
+        String IP = serverIP;
 
         String registerMsg = "register," + nickName + "," + password + "," + phoneNumber;
         AtomicInteger backUserID = new AtomicInteger();
@@ -311,34 +708,63 @@ public class ChatWindow extends Application
     void chatScene(Stage primaryStage)
     {
         Circle userImage = new Circle(24);
-        Ellipse chatButton = new Ellipse(24, 13);
-        Ellipse contactButton = new Ellipse(24, 13);
-
         userImage.setFill(Color.rgb(204, 204, 204));
-        chatButton.setFill(Color.rgb(204, 204, 204));
-        contactButton.setFill(Color.rgb(204, 204, 204));
 
-        Label chatText = new Label("chat");
-        Label contactText = new Label("contact");
+        File file = new File("./icon");
+
+        ImageView chatImageView = new ImageView("file:" + file.getAbsolutePath() + File.separatorChar + "chaT.png");
+        chatImageView.setFitHeight(40);
+        chatImageView.setFitWidth(38.4);
+        chatImageView.setOnMouseClicked(mouseEvent ->
+        {
+
+        });
+
+        ImageView contactImageView = new ImageView("file:" + file.getAbsolutePath() + File.separatorChar + "contact.png");
+        contactImageView.setFitWidth(38.4);
+        contactImageView.setFitHeight(40);
+        contactImageView.setOnMouseClicked(mouseEvent ->
+        {
+
+        });
+
+        ImageView addImageView = new ImageView("file:" + file.getAbsolutePath() + File.separatorChar + "add.png");
+        addImageView.setFitHeight(40);
+        addImageView.setFitWidth(38.4);
+        addImageView.setOnMouseClicked(mouseEvent ->
+        {
+            addFriendScene(primaryStage);
+        });
+
+        Label chatText = new Label("消息");
+        Label contactText = new Label("联系人");
+        Label addText = new Label("加好友");
 
         VBox chatButtonBox = new VBox();
-        chatButtonBox.getChildren().add(chatButton);
+        chatButtonBox.getChildren().add(chatImageView);
         chatButtonBox.getChildren().add(chatText);
-        chatButtonBox.setSpacing(10);
+        chatButtonBox.setSpacing(0);
         chatButtonBox.setAlignment(Pos.CENTER);
 
         VBox contactButtonBox = new VBox();
-        contactButtonBox.getChildren().add(contactButton);
+        contactButtonBox.getChildren().add(contactImageView);
         contactButtonBox.getChildren().add(contactText);
-        contactButtonBox.setSpacing(10);
+        contactButtonBox.setSpacing(0);
         contactButtonBox.setAlignment(Pos.CENTER);
+
+        VBox addButtonBox = new VBox();
+        addButtonBox.getChildren().add(addImageView);
+        addButtonBox.getChildren().add(addText);
+        addButtonBox.setSpacing(0);
+        addButtonBox.setAlignment(Pos.CENTER);
 
         VBox leftBorderBox = new VBox();
         leftBorderBox.getChildren().add(userImage);
         leftBorderBox.getChildren().add(chatButtonBox);
         leftBorderBox.getChildren().add(contactButtonBox);
+        leftBorderBox.getChildren().add(addButtonBox);
 
-        leftBorderBox.setSpacing(25);
+        leftBorderBox.setSpacing(20);
         leftBorderBox.setAlignment(Pos.TOP_CENTER);
         leftBorderBox.setLayoutY(10);
         leftBorderBox.setStyle("-fx-background-color: #FFFFFF");
@@ -436,6 +862,61 @@ public class ChatWindow extends Application
         primaryStage.show();
     }
 
+    public void addFriendScene(Stage primaryStage)
+    {
+        Label focusLabel = new Label("");
+        focusLabel.setOpacity(0); // 使Label透明
+
+        TextField addField = new TextField();
+        addField.setPromptText("账号/昵称");
+        addField.setPrefHeight(45);
+        addField.setMaxWidth(240);
+
+        Button confirmButton = new Button("查找");
+        confirmButton.setMaxWidth(240);
+        confirmButton.setPrefWidth(90);
+        confirmButton.setPrefHeight(45);
+        confirmButton.setStyle("-fx-background-color: #CCCCCC");
+
+        confirmButton.setOnAction(null);
+        confirmButton.setOnAction(actionEvent -> {
+            String message = addField.getText();
+            // 把message传入服务端，然后由服务端调用数据库查找，返回Arraylist<String>
+            // 格式为”UserID,NickName“   message指的是(输入账号/昵称)
+
+
+
+        });
+
+        Button backButton = new Button("返回");
+        backButton.setMaxWidth(240);
+        backButton.setPrefWidth(90);
+        backButton.setPrefHeight(45);
+        backButton.setStyle("-fx-background-color: #CCCCCC");
+        backButton.setOnMouseClicked(mouseEvent ->
+        {
+            chatScene(primaryStage);
+        });
+
+        HBox bottomBox = new HBox(20);
+        bottomBox.getChildren().addAll(backButton, confirmButton);
+        bottomBox.setAlignment(Pos.CENTER);
+
+        VBox vBox = new VBox(20);
+        vBox.getChildren().addAll(focusLabel, addField, bottomBox);
+        vBox.setStyle("-fx-background-color: #FFFFFF");
+        vBox.setAlignment(Pos.CENTER);
+
+        addField.setFocusTraversable(false);
+        focusLabel.setFocusTraversable(true);
+
+        Scene scene = new Scene(vBox, 260, 180);
+
+        primaryStage.setTitle("添加好友");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
     private void openFileChooser(Stage primaryStage) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose a File");
@@ -482,7 +963,7 @@ public class ChatWindow extends Application
 
 
     private int loginAction(ActionEvent event) throws IOException, InterruptedException {
-        String IP = "127.0.0.1";
+        String IP = serverIP;
         String userID = userIDField.getText();
         String passWD = passWDField.getText();
         String userPWD = "login," + userID + "," + passWD;
@@ -531,7 +1012,7 @@ public class ChatWindow extends Application
 
     private void createFriendList(VBox friendListBox) throws IOException, InterruptedException
     {
-        String IP = "127.0.0.1";
+        String IP = serverIP;
 
         try {
             Socket socket = new Socket(IP, 10001);

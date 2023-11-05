@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.*;
 
 public class Jdbc {
 
@@ -33,10 +33,10 @@ public class Jdbc {
             ResultSet set = con.getMetaData().getTables(null, null, "foundation", null);
             if(!set.next()) {
                 String sql = "CREATE TABLE foundation (\n" +
-                        "  UserID varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
-                        "  Password varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
-                        "  NickName varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
-                        "  Phone varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  UserID varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  Password varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  NickName varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  Phone varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
                         "  PRIMARY KEY (UserID, Password) USING BTREE\n" +
                         ")";
                 int rs = statement.executeUpdate(sql);
@@ -102,7 +102,7 @@ public class Jdbc {
     }
 
     // 注册后更新信息并创建表
-    public boolean update_qq(String UserID, String PassWord, String NickName, String Phonenumber) {
+    public boolean update_qq(String UserID, String NickName, String PassWord, String Phonenumber) {
         boolean b = true;
         try {
             String sql3 = "select * from foundation where UserID = " + UserID;
@@ -113,9 +113,9 @@ public class Jdbc {
                 String sql = "insert into foundation values ('" + UserID + "', '" + PassWord + "', '" + NickName + "', '" + Phonenumber + "')";  // 定义sql语句
                 int rs = statement.executeUpdate(sql);  // 查询数据库
                 String sql1 = "CREATE TABLE f_" + UserID + "  (\n" +
-                        "  UserID varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
-                        "  NickName varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
-                        "  Phone varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  UserID varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  NickName varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  Phone varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
                         "  PRIMARY KEY (UserID) USING BTREE\n" +
                         ")";
                 int rs1 = statement.executeUpdate(sql1);
@@ -197,8 +197,8 @@ public class Jdbc {
             ResultSet set = con.getMetaData().getTables(null, null, "f_" + SendID + "_" + ReceiverID, null);
             if(!set.next()) {
                 String sql = "CREATE TABLE f_" + SendID + "_" + ReceiverID + "  (\n" +
-                        "  status varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
-                        "  receiverNickName varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  status varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  receiverNickName varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
                         "  message varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
                         "  number bigint(0) NOT NULL,\n" +
                         "  PRIMARY KEY (number) USING BTREE\n" +
@@ -307,6 +307,92 @@ public class Jdbc {
             int rs = statement.executeUpdate(sql);
             if(rs > 0) {
                 System.out.println("更新成功");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return As;
+    }
+
+    // 是否存在该账号
+    public boolean checkUid(String uid) {
+        boolean b = false;
+        try {
+            Statement statement = con.createStatement();
+            String sql = "select * from foundation";
+            ResultSet rs = statement.executeQuery(sql);
+            while(rs.next()) {
+                if(uid.equals(rs.getString("UserID")))
+                {
+                    b = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return b;
+    }
+
+    // 是否验证成功
+    public boolean checkInfo(String uid, String phoneNum) {
+        boolean b = false;
+        try {
+            Statement statement = con.createStatement();
+            String sql = "select * from foundation where UserID = '" + uid + "'";
+            ResultSet rs = statement.executeQuery(sql);
+            while(rs.next()) {
+                if(phoneNum.equals(rs.getString("phoneNumber")))
+                {
+                    b = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return b;
+    }
+
+    // 忘记密码下更新密码
+    public boolean updatePassword(String uid, String password) {
+        try {
+            Statement statement = con.createStatement();
+            String sql = "update foundation set Password = '" + password + "' where UserID = '" + uid + "'";
+            int rs = statement.executeUpdate(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    // 通过传输String返回添加好友的Arraylist<String>
+    public ArrayList<String> addFriend(String message) {
+        HashMap hm = new HashMap<String, String>();
+        ArrayList<String> As = new ArrayList<String>();
+        String s = new String();
+        try {
+            Statement statement = con.createStatement();
+            String sql = "select * from foundation where UserID like '%" + message + "%'";
+            ResultSet rs = statement.executeQuery(sql);
+            while(rs.next()) {
+                hm.put(rs.getString("UserID"), rs.getString("NickName"));
+            }
+            String sql1 = "select * from foundation where NickName like '%" + message + "%'";
+            rs = statement.executeQuery(sql1);
+            while(rs.next()) {
+                hm.put(rs.getString("UserID"), rs.getString("NickName"));
+            }
+            Set<String> keys = hm.keySet();
+            List list = new ArrayList();
+            Iterator<String> it = keys.iterator();
+            while(it.hasNext()) {
+                list.add(it.next());
+            }
+            Collections.sort(list);
+            for(int i=0; i<list.size(); i++) {
+                s = list.get(i) + "," + hm.get(list.get(i));
+                As.add(s);
             }
         } catch (Exception e) {
             e.printStackTrace();

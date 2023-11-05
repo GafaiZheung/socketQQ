@@ -72,3 +72,7 @@ sendFile,null,genshin.txt,243 Bytes
 sendFile,null,111.txt,432 Bytes
 sendFile,null,111.txt,432 Bytes
 sendFile,null,genshin.txt,243 Bytes
+send,null,222
+send,null,333
+send,null,111'
+send,null,fuck you!!
