@@ -45,3 +45,18 @@ send,1,222
 recv,1,222
 sendFile,1,111.txt,432 Bytes,/Users/gafaizheung/Desktop/111.txt
 sendFile,1,taylor.jpg,582 KB,/Users/gafaizheung/Desktop/taylor.jpg
+sendFile,1,111.txt,432 Bytes,/Users/gafaizheung/Desktop/111.txt
+recvFile,1,111.txt,432B,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/111.txt
+sendFile,1,111.txt,432 Bytes,/Users/gafaizheung/Desktop/111.txt
+recvFile,1,111.txt,432B,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/111.txt
+recvFile,1,111.txt,0B,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/111.txt
+sendFile,1,111.txt,432 Bytes,/Users/gafaizheung/Desktop/111.txt
+recvFile,1,111.txt,432B,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/111.txt
+sendFile,1,111.txt,432 Bytes,/Users/gafaizheung/Desktop/111.txt
+recvFile,1,111.txt,432B,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/111.txt
+sendFile,1,taylor.jpg,582 KB,/Users/gafaizheung/Desktop/taylor.jpg
+sendFile,1,taylor.jpg,582 KB,/Users/gafaizheung/Desktop/taylor.jpg
+recvFile,1,taylor.jpg,582 KB,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/taylor.jpg
+sendFile,1,实验1_解线性规划.doc,35 KB,/Users/gafaizheung/Desktop/运筹学/最优化实验报告/实验报告/实验1_解线性规划.doc
+recvFile,1,实验1_解线性规划.doc,35 KB,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/实验1_解线性规划.doc
+send,1,111

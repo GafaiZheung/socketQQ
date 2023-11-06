@@ -84,8 +84,8 @@ public class ChatWindow extends Application
                 //                System.out.println(loginAction(actionEvent));
                 if(loginAction(actionEvent) == 1)
                 {
-                    chatClient.getCM().connect("192.168.123.113");
-                    FileTransferClient.getFtc().connect("192.168.123.113",8899);
+                    chatClient.getCM().connect(serverIP);
+                    FileTransferClient.getFtc().connect(serverIP,8899);
                     chatScene(primaryStage);
                 }
                 else if (loginAction(actionEvent) == 255)
@@ -717,26 +717,15 @@ public class ChatWindow extends Application
         ImageView chatImageView = new ImageView("file:" + file.getAbsolutePath() + File.separatorChar + "chaT.png");
         chatImageView.setFitHeight(40);
         chatImageView.setFitWidth(38.4);
-        chatImageView.setOnMouseClicked(mouseEvent ->
-        {
-
-        });
 
         ImageView contactImageView = new ImageView("file:" + file.getAbsolutePath() + File.separatorChar + "contact.png");
         contactImageView.setFitWidth(38.4);
         contactImageView.setFitHeight(40);
-        contactImageView.setOnMouseClicked(mouseEvent ->
-        {
 
-        });
 
         ImageView addImageView = new ImageView("file:" + file.getAbsolutePath() + File.separatorChar + "add.png");
         addImageView.setFitHeight(40);
         addImageView.setFitWidth(38.4);
-        addImageView.setOnMouseClicked(mouseEvent ->
-        {
-            addFriendScene(primaryStage);
-        });
 
         Label chatText = new Label("消息");
         Label contactText = new Label("联系人");
@@ -859,6 +848,22 @@ public class ChatWindow extends Application
         mainBox.setStyle("-fx-background-color: #FFFFFF");
 
         Scene scene = new Scene(mainBox, 1020, 620);
+
+        chatImageView.setOnMouseClicked(mouseEvent ->
+        {
+            scene.setRoot(mainBox);
+        });
+
+        contactImageView.setOnMouseClicked(mouseEvent ->
+        {
+
+        });
+
+        addImageView.setOnMouseClicked(mouseEvent ->
+        {
+            addFriendScene(primaryStage);
+        });
+
         primaryStage.setTitle("Chat Window");
         primaryStage.setScene(scene);
         primaryStage.show();

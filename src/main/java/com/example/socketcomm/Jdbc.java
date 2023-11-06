@@ -20,15 +20,15 @@ public class Jdbc {
         // 加载mysql的jdbc
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println("成功加载驱动！");
+//            System.out.println("成功加载驱动！");
         }
         catch (Exception e) {
-            System.out.println("加载驱动失败！");
+//            System.out.println("加载驱动失败！");
             e.printStackTrace();
         }
         try {
             con = DriverManager.getConnection(url, user, password);
-            if(!con.isClosed()) System.out.println("成功连接数据库");
+//            if(!con.isClosed()) System.out.println("成功连接数据库");
             statement = con.createStatement();
             ResultSet set = con.getMetaData().getTables(null, null, "foundation", null);
             if(!set.next()) {
@@ -40,13 +40,13 @@ public class Jdbc {
                         "  PRIMARY KEY (UserID, Password) USING BTREE\n" +
                         ")";
                 int rs = statement.executeUpdate(sql);
-                if (rs > 0) {
-                    System.out.println("更新成功");
-                }
+//                if (rs > 0) {
+//                    System.out.println("更新成功");
+//                }
             }
         }
         catch (Exception e) {
-            System.out.println("获取信息错误！");
+//            System.out.println("获取信息错误！");
             e.printStackTrace();
         }
     }

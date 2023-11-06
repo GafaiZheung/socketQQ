@@ -94,8 +94,23 @@ public class FileTransferClient {
                     System.out.println("======== 文件接收成功 [File Name：" + fileName + "]========");
                     client.close();
 
-//                    if(!recvID.equals(ChatWindow.currentUserID))
-//                        file.delete();
+                    if(recvID.equals(ChatWindow.currentUserID))
+                    {
+                        if(sendID.equals(ChatWindow.chatWithID))
+                        {
+                            ChatWindow.chatMessageField.recvFile(ChatWindow.chatTitle.getNickName(), fileName, getFormatFileSize(file.length()), file.getAbsolutePath());
+                        }
+                        else
+                        {
+                            for (int i = 0; i < friendInfoCard.allFriendInfoCards.size(); i++)
+                                if(sendID.equals(friendInfoCard.allFriendInfoCards.get(i).getUserID()))
+                                {
+                                    friendInfoCard.allFriendInfoCards.get(i).setMessageStatus(true);
+                                    String fPath = ChatWindow.currentUserID + sendID + ".txt";
+                                    new MessageField().offlineRecvFile(fPath, friendInfoCard.allFriendInfoCards.get(i).getNickName(), fileName, getFormatFileSize(file.length()), file.getAbsolutePath());
+                                }
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }finally {
@@ -105,20 +120,17 @@ public class FileTransferClient {
         }.start();
     }
 
-    private String getFormatFileSize(long length) {
-        double size = ((double) length) / (1 << 30);
-        if(size >= 1) {
-            return df.format(size) + "GB";
+    private String getFormatFileSize(long fileSize)
+    {
+        String[] sizeUnits = {"Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+        int unitIndex = 0;
+
+        while (fileSize > 1024 && unitIndex < sizeUnits.length - 1) {
+            fileSize /= 1024;
+            unitIndex++;
         }
-        size = ((double) length) / (1 << 20);
-        if(size >= 1) {
-            return df.format(size) + "MB";
-        }
-        size = ((double) length) / (1 << 10);
-        if(size >= 1) {
-            return df.format(size) + "KB";
-        }
-        return length + "B";
+
+        return String.format("%d %s", fileSize, sizeUnits[unitIndex]);
     }
 
     public void sendFile(String filePath) {

@@ -1,78 +1,10 @@
-recv,1,111
-send,gafai,你好！
-recv,1,你也好！
-send,gafai,你吃臭豆腐吗？
-send,gafai,你吃臭豆腐吗？
-recv,1,我吃牛魔
-send,gafai,去你丫的
-recv,1,尼玛死了
-send,gafai,尼玛才死了
-recv,1,傻逼dyq
-send,gafai,真恶心
-send,gafai,你马
-recv,1,111
-recv,1,你好！！！
-recv,1,test send fail
-send,null,你好！
-send,null,测试离线保存
-send,null,测试离线保存2
-send,null,测试离线保存3
+
+send,null,运筹学实验报告发给我
+send,null,111
 recv,1,222
-recv,1,333
 send,null,111
+recv,1,222
 send,null,111
-send,null,222
-send,null,测试离线保存
-send,null,测试离线保存2
-send,null,test1
-send,null,test2
-send,null,test3
-send,null,test111
-send,null,test222
-send,null,test333
-recv,1,test1
-recv,1,test2
-recv,1,test3
-send,null,test3
-send,null,test2
-send,null,test1
-send,null,t1
-send,null,t2
-send,null,t3
-send,null,111
-send,null,222
-send,null,333
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,202125810125-信科-张嘉辉.zip,20 MB
-sendFile,null,报告.doc,328 KB
-sendFile,null,报告.doc,328 KB
-sendFile,null,实训1-1-202125810125-信息与计算科学-张嘉辉.png,67 KB
-sendFile,null,实训1-2-202125810125-信息与计算科学-张嘉辉.png,252 KB
-sendFile,null,实训1-1-202125810125-信息与计算科学-张嘉辉.png,67 KB
-sendFile,null,实训1-3-202125810125-信息与计算科学-张嘉辉.png,620 KB
-sendFile,null,实训1-4-202125810125-信息与计算科学-张嘉辉.mp4,19 MB
-sendFile,null,实训1-3-202125810125-信息与计算科学-张嘉辉.png,620 KB
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,genshin.txt,243 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,genshin.txt,243 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,111.txt,432 Bytes
-sendFile,null,genshin.txt,243 Bytes
-send,null,222
-send,null,333
-send,null,111'
-send,null,fuck you!!
+send,null,运筹学实验报告发来看看
+recv,1,拿去
+recvFile,1,实验1_解线性规划.doc,35 KB,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/实验1_解线性规划.doc

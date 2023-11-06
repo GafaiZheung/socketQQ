@@ -109,9 +109,12 @@ public class MessageField extends ScrollPane
         }
         RecvFileCard card = new RecvFileCard(nickName, fileName, fileSize, openFilePath);
         card.setPadding(new Insets(10, 0, 10, 0));
-        messageCardBox.getChildren().add(card);
 
-        this.setVvalue(1.0);
+        Platform.runLater(() -> {
+            messageCardBox.getChildren().add(card);
+            // 自动滚动到底部
+            this.setVvalue(1.0);
+        });
     }
 
     public void progressBar(double progress)
@@ -210,6 +213,17 @@ public class MessageField extends ScrollPane
             fileWriter.write("recv," + nickName + "," + message + "\n");
             fileWriter.close();
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void offlineRecvFile(String fPath, String nickName, String fileName, String fileSize, String filePath)
+    {
+        try {
+            fileWriter = new FileWriter(fPath, true);
+            fileWriter.write("recvFile," + nickName + "," + fileName + "," + fileSize + "," + filePath + "\n");
+            fileWriter.close();
+        }catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -413,7 +427,7 @@ class RecvFileCard extends HBox
 
         VBox leftSide = new VBox();
         leftSide.getChildren().addAll(name,fileBox);
-        leftSide.setAlignment(Pos.CENTER_RIGHT);
+        leftSide.setAlignment(Pos.CENTER_LEFT);
         leftSide.setPrefHeight(120);
 
         this.getChildren().addAll(imageBox, leftSide);
