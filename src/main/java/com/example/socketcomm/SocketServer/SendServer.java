@@ -66,7 +66,7 @@ public class SendServer implements Runnable
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            SendServerManager.getSsm().remove(this);
         }
     }
     @Override

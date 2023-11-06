@@ -699,6 +699,8 @@ public class ChatWindow extends Application
 
     void sendProcess(ActionEvent event)
     {
+        if(inputTextField.getText() == null)
+            return;
         chatMessageField.send(currentUserNickName, inputTextField.getText());
 //        chatTextArea.appendText("entered:" + inputTextField.getText() + "\n");
         chatClient.getCM().send("mesg:" ,chatWithID + "," + inputTextField.getText());
@@ -934,7 +936,7 @@ public class ChatWindow extends Application
         if (selectedFile != null) {
             String filePath = selectedFile.getAbsolutePath();
             System.out.println("Selected File: " + filePath);
-            chatMessageField.sendFile(currentUserNickName, selectedFile.getName(), fileSizeFormatter(selectedFile.length()));
+            chatMessageField.sendFile(currentUserNickName, selectedFile.getName(), fileSizeFormatter(selectedFile.length()), selectedFile.getAbsolutePath());
             try {
                 FileTransferClient.getFtc().sendFile(filePath);
             } catch (Exception e) {

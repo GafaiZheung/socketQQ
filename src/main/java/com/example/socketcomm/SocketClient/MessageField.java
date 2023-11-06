@@ -12,10 +12,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,17 +77,17 @@ public class MessageField extends ScrollPane
         this.setVvalue(1.0);
     }
 
-    public void sendFile(String nickName, String fileName, String fileSize)
+    public void sendFile(String nickName, String fileName, String fileSize, String openFilePath)
     {
         try {
             fileWriter = new FileWriter(filePath, true);
-            fileWriter.write("sendFile," + nickName + "," + fileName + "," + fileSize + "\n");
+            fileWriter.write("sendFile," + nickName + "," + fileName + "," + fileSize + "," + openFilePath + "\n");
             fileWriter.close();
         }catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-        SendFileCard card = new SendFileCard(nickName, fileName, fileSize);
+        SendFileCard card = new SendFileCard(nickName, fileName, fileSize, openFilePath);
         card.setPadding(new Insets(10, 0, 10, 0));
         messageCardBox.getChildren().add(card);
 
@@ -99,17 +97,17 @@ public class MessageField extends ScrollPane
         this.setVvalue(1.0);
     }
 
-    public void recvFile(String nickName, String fileName, String fileSize)
+    public void recvFile(String nickName, String fileName, String fileSize, String openFilePath)
     {
         try {
             fileWriter = new FileWriter(filePath, true);
-            fileWriter.write("recvFile," + nickName + "," + fileName + "," + fileSize + "\n");
+            fileWriter.write("recvFile," + nickName + "," + fileName + "," + fileSize + "," + openFilePath + "\n");
             fileWriter.close();
         }catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-        RecvFileCard card = new RecvFileCard(nickName, fileName, fileSize);
+        RecvFileCard card = new RecvFileCard(nickName, fileName, fileSize, openFilePath);
         card.setPadding(new Insets(10, 0, 10, 0));
         messageCardBox.getChildren().add(card);
 
@@ -155,12 +153,12 @@ public class MessageField extends ScrollPane
                         messageCards.add(card);
                     }
                     case "sendFile" -> {
-                        SendFileCard card = new SendFileCard(str[1], str[2], str[3]);
+                        SendFileCard card = new SendFileCard(str[1], str[2], str[3], str[4]);
                         card.setPadding(new Insets(10, 0, 10, 0));
                         messageCards.add(card);
                     }
                     case "recvFile" -> {
-                        RecvFileCard card = new RecvFileCard(str[1], str[2], str[3]);
+                        RecvFileCard card = new RecvFileCard(str[1], str[2], str[3], str[4]);
                         card.setPadding(new Insets(10, 0, 10, 0));
                         messageCards.add(card);
                     }
@@ -280,7 +278,7 @@ class SendMessageCard extends HBox
 
 class SendFileCard extends HBox
 {
-    public SendFileCard(String nickName, String fileName, String fileSize)
+    public SendFileCard(String nickName, String fileName, String fileSize, String filePath)
     {
         Circle userImage = new Circle(24);
         userImage.setFill(Color.rgb(204, 204, 204));
@@ -325,12 +323,59 @@ class SendFileCard extends HBox
         this.setAlignment(Pos.CENTER_RIGHT);
         this.setPrefHeight(120);
         this.setPrefWidth(640);
+
+        this.setOnMouseClicked(mouseEvent -> {
+//            Desktop desktop = Desktop.getDesktop();
+//            File f = new File(filePath);
+//            try {
+//                desktop.open(f.getParentFile());
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+            String osName = System.getProperty("os.name").toLowerCase();
+
+            if (osName.contains("win")) {
+                openOnWindows(filePath);
+            } else if (osName.contains("mac")) {
+                openOnMac(filePath);
+            } else if (osName.contains("nix") || osName.contains("nux")) {
+                openOnUnix(filePath);
+            }
+        });
+    }
+
+    private void openOnWindows(String filePath)
+    {
+        try {
+            Runtime.getRuntime().exec("explorer.exe /select," + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openOnMac(String filePath)
+    {
+        try {
+            Runtime.getRuntime().exec(new String[] { "open", "-R", filePath });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openOnUnix(String filePath)
+    {
+        try {
+            Runtime.getRuntime().exec("nautilus --select " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
+
 class RecvFileCard extends HBox
 {
-    public RecvFileCard(String nickName, String fileName, String fileSize)
+    public RecvFileCard(String nickName, String fileName, String fileSize, String filePath)
     {
         Circle userImage = new Circle(24);
         userImage.setFill(Color.rgb(204, 204, 204));
@@ -375,6 +420,44 @@ class RecvFileCard extends HBox
         this.setAlignment(Pos.CENTER_LEFT);
         this.setPrefHeight(120);
         this.setPrefWidth(640);
+
+        this.setOnMouseClicked(mouseEvent -> {
+            String osName = System.getProperty("os.name").toLowerCase();
+
+            if (osName.contains("win")) {
+                openOnWindows(filePath);
+            } else if (osName.contains("mac")) {
+                openOnMac(filePath);
+            } else if (osName.contains("nix") || osName.contains("nux")) {
+                openOnUnix(filePath);
+            }});
+    }
+
+    private void openOnWindows(String filePath)
+    {
+        try {
+            Runtime.getRuntime().exec("explorer.exe /select," + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openOnMac(String filePath)
+    {
+        try {
+            Runtime.getRuntime().exec(new String[] { "open", "-R", filePath });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openOnUnix(String filePath)
+    {
+        try {
+            Runtime.getRuntime().exec("nautilus --select " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
