@@ -6,11 +6,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 
-public class chatTitle extends VBox
+public class ChatTitle extends VBox
 {
     String nickName;
     private Label nameText;
-    public chatTitle(String name)
+    public ChatTitle(String name)
     {
         nickName = name;
 

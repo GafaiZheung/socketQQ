@@ -16,7 +16,7 @@ import java.util.Random;
 public class LoginServer {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
-        SocketAddress address = new InetSocketAddress(8080);
+        SocketAddress address = new InetSocketAddress(8081);
         serverSocket.bind(address);
         System.out.println("Login server has started");
         while (true)

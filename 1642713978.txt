@@ -1,3 +1,4 @@
 recv,xukang,运筹学实验报告发来看看
 send,1,拿去
 sendFile,1,实验1_解线性规划.doc,35 KB,/Users/gafaizheung/Desktop/运筹学/最优化实验报告/实验报告/实验1_解线性规划.doc
+send,1,你干嘛

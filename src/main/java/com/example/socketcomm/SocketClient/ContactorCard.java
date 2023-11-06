@@ -10,24 +10,21 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
-public class friendInfoCard extends HBox {
-    protected static String filePath;
-
+public class ContactorCard extends HBox
+{
     String nickName;
     String userID;
     Label userIDText;
 
     private boolean isClicked = false; // 新增一个标志来跟踪是否已经点击
-    protected static ArrayList<friendInfoCard> allFriendInfoCards = new ArrayList<>();
+    protected static ArrayList<ContactorCard> allContactorCards = new ArrayList<>();
 
 
-    public friendInfoCard(String name, String ID) {
+    public ContactorCard(String name, String ID) {
         nickName = name;
         userID = ID;
 
@@ -52,27 +49,10 @@ public class friendInfoCard extends HBox {
         setPrefHeight(80);
         setStyle("-fx-background-color: #FFFFFF");
 
-        allFriendInfoCards.add(this); // 将新创建的对象添加到集合中
+        allContactorCards.add(this); // 将新创建的对象添加到集合中
 
         this.setOnMouseClicked(this::clickFriendInfoCard);
     }
-
-    public void setMessageStatus(boolean hasMessage)
-    {
-        if(hasMessage)
-        {
-            Platform.runLater(() -> {
-                userIDText.setText("有新消息");
-                userIDText.setStyle("-fx-background-color: #CCCCCC");
-            });
-        }
-        else
-        {
-            userIDText.setText(userID);
-            userIDText.setStyle("-fx-background-color: transparent");
-        }
-    }
-
 
     void setNickName(String name) {
         nickName = name;
@@ -108,33 +88,16 @@ public class friendInfoCard extends HBox {
             // 设置选中状态的背景颜色
             this.setStyle("-fx-background-color: #CCCCCC");
             ChatWindow.chatWithID = userID;
-
-            this.setMessageStatus(false);
-
-            String sendID = ChatWindow.currentUserID;
-            String recvID = ChatWindow.chatWithID;
-            filePath = sendID + recvID + ".txt";
-            try {
-                new FileWriter(filePath, true).close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            ChatWindow.chatMessageField.clear();
-//            System.out.println(filePath);
-            ChatWindow.chatMessageField.initialize();
-//            ChatWindow.chatTextArea.setText("");
         }
 
         isClicked = !isClicked; // 切换点击状态
 
         // 循环处理其他对象
-        for (friendInfoCard card : allFriendInfoCards) {
+        for (ContactorCard card : allContactorCards) {
             if (card != this) {
                 card.setStyle("-fx-background-color: #FFFFFF");
                 card.isClicked = false;
             }
         }
-
-        ChatWindow.chatTitle.setNickName(nickName);
     }
 }

@@ -20,7 +20,7 @@ public class ChatSocket extends Thread {
         try {
             socket.getOutputStream().write((out+"\n").getBytes("UTF-8"));
         } catch (IOException e) {
-            ServerManager.getServetManager().remove(this);
+//            ServerManager.getServetManager().remove(this);
             e.printStackTrace();
         };
     }

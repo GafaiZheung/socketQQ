@@ -60,3 +60,11 @@ recvFile,1,taylor.jpg,582 KB,/Users/gafaizheung/IdeaProjects/SocketComm/./client
 sendFile,1,实验1_解线性规划.doc,35 KB,/Users/gafaizheung/Desktop/运筹学/最优化实验报告/实验报告/实验1_解线性规划.doc
 recvFile,1,实验1_解线性规划.doc,35 KB,/Users/gafaizheung/IdeaProjects/SocketComm/./clientRecv/实验1_解线性规划.doc
 send,1,111
+send,1,111
+send,1,111
+recv,1,111
+send,1,222
+recv,1,222
+send,1,222
+recv,1,222
+send,1,111

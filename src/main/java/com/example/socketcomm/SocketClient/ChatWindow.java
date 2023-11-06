@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChatWindow extends Application
 {
     public static String serverIP = "127.0.0.1";
-    public static chatTitle chatTitle = new chatTitle("test");
+    public static ChatTitle chatTitle = new ChatTitle("test");
     public static MessageField chatMessageField = new MessageField();
     public static TextArea chatTextArea = new TextArea();
     public static TextField inputTextField = new TextField();
@@ -398,7 +398,7 @@ public class ChatWindow extends Application
         AtomicInteger back = new AtomicInteger();
 
         try {
-            Socket socket = new Socket(IP, 8080);
+            Socket socket = new Socket(IP, 8081);
 
             // 异步发送数据
             Thread sendThread = new Thread(() -> {
@@ -445,7 +445,7 @@ public class ChatWindow extends Application
         AtomicInteger back = new AtomicInteger();
 
         try {
-            Socket socket = new Socket(IP, 8080);
+            Socket socket = new Socket(IP, 8081);
 
             // 异步发送数据
             Thread sendThread = new Thread(() -> {
@@ -492,7 +492,7 @@ public class ChatWindow extends Application
         AtomicInteger back = new AtomicInteger();
 
         try {
-            Socket socket = new Socket(IP, 8080);
+            Socket socket = new Socket(IP, 8081);
 
             // 异步发送数据
             Thread sendThread = new Thread(() -> {
@@ -656,7 +656,7 @@ public class ChatWindow extends Application
         AtomicInteger backUserID = new AtomicInteger();
 
         try {
-            Socket socket = new Socket(IP, 8080);
+            Socket socket = new Socket(IP, 8081);
 
             // 异步发送数据
             Thread sendThread = new Thread(() -> {
@@ -849,19 +849,131 @@ public class ChatWindow extends Application
 
         Scene scene = new Scene(mainBox, 1020, 620);
 
+        HBox contactBox = new HBox(10);
+        contactBox.setStyle("-fx-background-color: #FFFFFF");
+        contactBox.setPadding(new Insets(10, 10, 0, 10));
+
+        VBox centreBox = new VBox(20);
+        centreBox.setPadding(new Insets(10, 0, 0, 0));
+
+        Button friendNotification = new Button("好友通知                               >");
+        friendNotification.setStyle("-fx-background-color: #CCCCCC;-fx-font-size: 14; -fx-alignment: center-right");
+        friendNotification.setPrefWidth(265);
+        friendNotification.setPrefHeight(40);
+
+        Button friendButton = new Button("好友");
+        Button groupButton = new Button("创建群聊");
+        friendButton.setStyle("-fx-background-color: #CCCCCC; -fx-font-size: 14");
+        groupButton.setStyle("-fx-background-color: #CCCCCC; -fx-font-size: 14");
+        friendButton.setPrefHeight(40);
+        groupButton.setPrefHeight(40);
+        friendButton.setPrefWidth(120);
+        groupButton.setPrefWidth(120);
+
+        ChatTitle contactTitle = new ChatTitle("");
+
+        VBox rightBox = new VBox(10);
+
+        groupButton.setOnAction(ActionEvent ->
+        {
+            contactTitle.setNickName("创建群聊");
+            VBox selectBox = new VBox(10);
+            for (int i = 0; i < friendInfoCard.allFriendInfoCards.size(); i++)
+            {
+                selectBox.getChildren().add(new SelectCard(friendInfoCard.allFriendInfoCards.get(i).getNickName(), friendInfoCard.allFriendInfoCards.get(i).getUserID()));
+            }
+            ScrollPane selectScrollPane = new ScrollPane(selectBox);
+            selectScrollPane.setPrefWidth(666);
+            selectScrollPane.setPrefHeight(600);
+
+
+            Button createGroupButton = new Button("确认创建群聊");
+            createGroupButton.setPrefWidth(400);
+            createGroupButton.setPrefHeight(45);
+            createGroupButton.setStyle("-fx-background-color: #CCCCCC;");
+
+            VBox createGroupButtonBox = new VBox();
+            createGroupButtonBox.setPrefWidth(666);
+            createGroupButtonBox.setPrefHeight(100);
+            createGroupButtonBox.getChildren().add(createGroupButton);
+            createGroupButtonBox.setAlignment(Pos.CENTER);
+
+
+            rightBox.getChildren().clear();
+            rightBox.getChildren().addAll(contactTitle, selectBox, createGroupButtonBox);
+        });
+
+        HBox centreButtonBox = new HBox(25);
+        centreButtonBox.getChildren().addAll(friendButton, groupButton);
+
+        ScrollPane friendScrollPane = new ScrollPane();
+
+        centreBox.getChildren().addAll(friendNotification, centreButtonBox, friendScrollPane);
+        centreBox.setAlignment(Pos.TOP_CENTER);
+        centreBox.setPrefWidth(265);
+
+
+        friendNotification.setOnAction(ActionEvent ->
+        {
+            contactTitle.setNickName("好友通知");
+            ScrollPane friendNotificationPane = new ScrollPane();
+            rightBox.getChildren().clear();
+            rightBox.getChildren().addAll(contactTitle,friendNotificationPane);
+        });
+
+        contactBox.getChildren().addAll(centreBox, rightBox);
+
+
+        HBox addBox = new HBox(10);
+        addBox.setStyle("-fx-background-color: #FFFFFF");
+        addBox.setPadding(new Insets(10, 10, 0, 10));
+
+        TextField searchField = new TextField();
+        searchField.setPromptText("账号/昵称");
+        searchField.setPrefWidth(265);
+        searchField.setPrefHeight(40);
+
+        Label focusLabel = new Label("");
+        focusLabel.setOpacity(0);
+        focusLabel.setFocusTraversable(true);
+        searchField.setFocusTraversable(false);
+
+        ScrollPane searchResult = new ScrollPane();
+
+        VBox centreBoxA = new VBox(10);
+        centreBoxA.setPadding(new Insets(10, 0, 0, 0));
+        centreBoxA.setAlignment(Pos.TOP_CENTER);
+        centreBoxA.setPrefWidth(265);
+        centreBoxA.getChildren().addAll(searchField, focusLabel, searchResult);
+
+        addBox.getChildren().addAll(centreBoxA);
+
         chatImageView.setOnMouseClicked(mouseEvent ->
         {
+            if(scene.getRoot().equals(mainBox))
+                return;
+
+            mainBox.getChildren().add(0, leftBorderBox);
             scene.setRoot(mainBox);
         });
 
         contactImageView.setOnMouseClicked(mouseEvent ->
         {
+            if(scene.getRoot().equals(contactBox))
+                return;
 
+            contactBox.getChildren().add(0, leftBorderBox);
+            scene.setRoot(contactBox);
         });
 
         addImageView.setOnMouseClicked(mouseEvent ->
         {
-            addFriendScene(primaryStage);
+//            addFriendScene(primaryStage);
+            if(scene.getRoot().equals(addBox))
+                return;
+
+            addBox.getChildren().add(0, leftBorderBox);
+            scene.setRoot(addBox);
         });
 
         primaryStage.setTitle("Chat Window");
@@ -977,7 +1089,7 @@ public class ChatWindow extends Application
         AtomicInteger loginStatus = new AtomicInteger();
 
         try {
-            Socket socket = new Socket(IP, 8080);
+            Socket socket = new Socket(IP, 8081);
 
             // 异步发送数据
             Thread sendThread = new Thread(() -> {
