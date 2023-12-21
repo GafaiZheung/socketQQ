@@ -1,5 +1,7 @@
 package com.example.socketcomm.SocketClient;
 
+import javafx.application.Platform;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -47,13 +49,30 @@ public class chatClient {
                             ChatWindow.chatMessageField.recv(ChatWindow.chatTitle.getNickName(), str[1]);
                         else
                         {
+                            boolean isAdded = false;
                             for (int i = 0; i < friendInfoCard.allFriendInfoCards.size(); i++)
                                 if(str[0].equals(friendInfoCard.allFriendInfoCards.get(i).getUserID()))
                                 {
+                                    isAdded = true;
                                     friendInfoCard.allFriendInfoCards.get(i).setMessageStatus(true);
                                     String fPath = ChatWindow.currentUserID + str[0] + ".txt";
                                     new MessageField().offlineRecv(fPath, friendInfoCard.allFriendInfoCards.get(i).getNickName(), str[1]);
                                 }
+                            // if not added
+                            if(!isAdded)
+                            {
+                                System.out.println("local update");
+                                //update local friendList
+                                Platform.runLater(() ->
+                                {
+                                    ChatWindow.infoCardBox.getChildren().add(new friendInfoCard(str[1], str[0]));
+                                    ChatWindow.friendList.getChildren().add(new ContactorCard(str[1], str[0], ContactorCard.allContactorCards.get(0).rightBox));
+                                });
+
+                                //local message tips
+                                String fPath = ChatWindow.currentUserID + str[0] + ".txt";
+                                new MessageField().offlineRecv(fPath, str[1], str[1] + "已添加您为好友");
+                            }
                         }
 //                        ChatWindow.chatTextArea.appendText("收到: " + line + "\n");
                     }

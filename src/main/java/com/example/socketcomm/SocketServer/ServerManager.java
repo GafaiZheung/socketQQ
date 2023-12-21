@@ -2,6 +2,7 @@ package com.example.socketcomm.SocketServer;
 
 import com.example.socketcomm.Jdbc;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class ServerManager {
@@ -27,6 +28,19 @@ public class ServerManager {
         String out = sendUserID + "," + message;
         boolean isSendSuccess = false;
         Jdbc mysql = new Jdbc();
+
+        boolean isAdded = false;
+        for(String friendID: mysql.select_friend(sendUserID))
+        {
+            if (recvUserID.equals(friendID)) {
+                isAdded = true;
+                break;
+            }
+        }
+        if(!isAdded)
+        {
+            mysql.Initialize(sendUserID, recvUserID);
+        }
 
         for (ChatSocket csChatSocket : vector) {
             //把vector中的每一个个体与传进来的线程进行比较，如果不是自己则发送

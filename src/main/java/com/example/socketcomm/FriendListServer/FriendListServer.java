@@ -1,6 +1,8 @@
 package com.example.socketcomm.FriendListServer;
 
 import com.example.socketcomm.Jdbc;
+import com.example.socketcomm.SocketServer.ServerManager;
+
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -23,22 +25,44 @@ public class FriendListServer
             Thread clientThread = new Thread(() -> {
                 try {
 
-                    String userID = readData(socket.getInputStream());
+                    String in = readData(socket.getInputStream());
+                    String[] str = in.split(",");
 
-                    System.out.println(userID);
+                    switch (str[0]) {
+                        case "pull" -> {
+                            System.out.println(str[1]);
 
-                    //读取数据库中的userID对应的friendlist，发回客户端
-                    //已实现
-                    OutputStream out = socket.getOutputStream();
-                    ArrayList<String> s = mysql.select_friend(userID);
-                    for (String value : s) {
-                        out.write(value.getBytes());
-                        out.flush();
+                            //读取数据库中的userID对应的friendlist，发回客户端
+                            //已实现
+                            OutputStream out = socket.getOutputStream();
+                            ArrayList<String> s = mysql.select_friend(str[1]);
+                            for (String value : s) {
+                                out.write(value.getBytes());
+                                out.flush();
+                            }
+                            out.write(("end" + "\n").getBytes());
+                            out.flush();
+                            socket.close();
+                        }
+                        case "delete" -> mysql.delete_friend(str[1], str[2]);
+                        case "search" -> {
+                            System.out.println(str[2]);
+                            OutputStream out = socket.getOutputStream();
+                            ArrayList<String> returnMessage = mysql.addFriend(str[2]);
+                            for(String value: returnMessage)
+                            {
+                                System.out.println(value);
+                                out.write(value.getBytes());
+                                out.flush();
+                            }
+                            out.write(("end" + "\n").getBytes());
+                            out.flush();
+                        }
+                        case "add" ->
+                        {
+                            mysql.add_friend(str[1], str[2]);
+                        }
                     }
-                    out.write(("end" + "\n").getBytes());
-                    out.flush();
-
-                    socket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

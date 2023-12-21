@@ -78,8 +78,8 @@ public class ChatSocket extends Thread {
                         String[] socketMsg = line.split(",");
 //                    System.out.println(line);
                         System.out.println(this.getUserID() + " send to " + socketMsg[0] + ":" + socketMsg[1]);
-                        mysql.Initialize(this.getUserID(), socketMsg[1]);
-                        mysql.Initialize(socketMsg[1], this.getUserID());
+//                        mysql.Initialize(this.getUserID(), socketMsg[1]);
+//                        mysql.Initialize(socketMsg[1], this.getUserID());
                         ServerManager.getServetManager().publish(this, socketMsg[0], this.getUserID(), socketMsg[1]);
                     }
                 }

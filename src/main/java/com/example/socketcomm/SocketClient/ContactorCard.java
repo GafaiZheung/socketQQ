@@ -1,8 +1,10 @@
 package com.example.socketcomm.SocketClient;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -20,13 +22,16 @@ public class ContactorCard extends HBox
     String userID;
     Label userIDText;
 
+    VBox rightBox;
+
     private boolean isClicked = false; // 新增一个标志来跟踪是否已经点击
     protected static ArrayList<ContactorCard> allContactorCards = new ArrayList<>();
 
 
-    public ContactorCard(String name, String ID) {
+    public ContactorCard(String name, String ID, VBox rightBox) {
         nickName = name;
         userID = ID;
+        this.rightBox = rightBox;
 
         Label nickNameText = new Label(nickName);
         userIDText = new Label(userID);
@@ -87,7 +92,35 @@ public class ContactorCard extends HBox
         } else {
             // 设置选中状态的背景颜色
             this.setStyle("-fx-background-color: #CCCCCC");
-            ChatWindow.chatWithID = userID;
+
+
+            if (!this.userID.equals(ChatWindow.currentUserID))
+            {
+                Button deleteFriendButton = new Button("删除" + this.userID);
+                deleteFriendButton.setStyle("-fx-background-color: #CCCCCC");
+//            deleteFriendButton.setPadding(new Insets(100, 0, 0, 0));
+                deleteFriendButton.setPrefWidth(200);
+                deleteFriendButton.setPrefHeight(50);
+
+                deleteFriendButton.setOnAction(ActionEvent -> {
+                    ChatWindow.deleteFriendAction(this.userID);
+                    rightBox.getChildren().clear();
+                });
+
+                HBox deleteBox = new HBox();
+                deleteBox.getChildren().add(deleteFriendButton);
+                deleteBox.setPrefWidth(666);
+                deleteBox.setPrefHeight(300);
+                deleteBox.setAlignment(Pos.CENTER);
+                ChatWindow.contactTitle.setNickName("好友管理");
+                rightBox.getChildren().clear();
+                rightBox.getChildren().addAll(ChatWindow.contactTitle, deleteBox);
+            }
+            else
+            {
+                rightBox.getChildren().clear();
+                rightBox.getChildren().add(ChatWindow.contactTitle);
+            }
         }
 
         isClicked = !isClicked; // 切换点击状态

@@ -10,7 +10,7 @@ import java.util.*;
 public class Jdbc {
 
     public static Connection con;
-    public static String url = "jdbc:mysql://localhost:3306/test_qq?useSSL=false";
+    public static String url = "jdbc:mysql://localhost:3306/test_qq?useSSL=false&allowPublicKeyRetrieval=true";
     public static String user = "root";
     public static String password = "20031016LCx.";
     public static Statement statement;
@@ -134,7 +134,7 @@ public class Jdbc {
     }
 
     // 查找好友是否已经注册
-    public static boolean check_friend(String FriendID) {
+    public boolean check_friend(String FriendID) {
         boolean b = false;
         try {
             String sql1 = "select * from foundation where UserID = " + FriendID;
@@ -155,19 +155,56 @@ public class Jdbc {
 
     // 添加好友
     public void add_friend(String UserID, String FriendID) {
+        boolean b = true;
         try {
             String sql1 = "select * from foundation where UserID = " + FriendID;
             ResultSet rs1 = statement.executeQuery(sql1);
             String Friend_NickName = new String();
             String Phonenumber = new String();
+            String Friend_NickName1 = new String();
+            String Phonenumber1 = new String();
             while(rs1.next()) {
                 Friend_NickName = rs1.getString("NickName");
-                Phonenumber = rs1.getString("Phone");
+                Phonenumber = rs1.getString("PhoneNumber");
             }
             String sql = "insert into f_" + UserID + " values ('" + FriendID + "', '" + Friend_NickName + "', '" + Phonenumber + "')"; // 定义sql语句
             int rs = statement.executeUpdate(sql);  // 查询数据库
-            if(rs > 0) {
+
+            String sql3 = "select * from foundation where UserID = " + UserID;
+            ResultSet rs3 = statement.executeQuery(sql3);
+            while(rs3.next()) {
+                Friend_NickName1 = rs3.getString("NickName");
+                Phonenumber1 = rs3.getString("PhoneNumber");
+            }
+            String sql2 = "insert into f_" + FriendID + " values ('" + UserID + "', '" + Friend_NickName1 + "', '" + Phonenumber1 + "')";
+            int rs11 = statement.executeUpdate(sql2);
+            if(rs>0 && rs11>0) {
                 System.out.println("更新成功");
+            }
+            ResultSet set = con.getMetaData().getTables(null, null, "f_" + UserID + "_" + FriendID, null);
+            if(!set.next())
+            {
+                String sql111 = "CREATE TABLE f_" + UserID + "_" + FriendID + "  (\n" +
+                        "  status varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  receiverNickName varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  message varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  number bigint(0) NOT NULL,\n" +
+                        "  PRIMARY KEY (number) USING BTREE\n" +
+                        ")";
+                int rs111 = statement.executeUpdate(sql111);  // 查询数据库
+            }
+
+            ResultSet set1 = con.getMetaData().getTables(null, null, "f_" + FriendID + "_" + UserID, null);
+            if(!set1.next())
+            {
+                String sql222 = "CREATE TABLE f_" + FriendID + "_" + UserID + "  (\n" +
+                        "  status varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n" +
+                        "  receiverNickName varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  message varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,\n" +
+                        "  number bigint(0) NOT NULL,\n" +
+                        "  PRIMARY KEY (number) USING BTREE\n" +
+                        ")";
+                int rs222 = statement.executeUpdate(sql222);  // 查询数据库
             }
         }
         catch (Exception e) {
@@ -181,7 +218,13 @@ public class Jdbc {
         try {
             String sql = "delete from f_" + UserID + " where UserID = \"" + FriendID + "\"";
             int rs = statement.executeUpdate(sql);  // 查询数据库
-            if(rs > 0) {
+            String sql1 = "delete from f_" + FriendID + " where UserID = \"" + UserID + "\"";
+            int rs1 = statement.executeUpdate(sql1);  // 查询数据库
+            String sql2 = "drop table f_" + UserID + "_" + FriendID;
+            int rs2 = statement.executeUpdate(sql2);
+            String sql3 = "drop table f_" + FriendID + "_" + UserID;
+            int rs3 = statement.executeUpdate(sql3);
+            if(rs > 0 && rs1 > 0 && rs2 > 0 && rs3 > 0) {
                 System.out.println("更新成功");
             }
         }
@@ -391,7 +434,7 @@ public class Jdbc {
             }
             Collections.sort(list);
             for(int i=0; i<list.size(); i++) {
-                s = list.get(i) + "," + hm.get(list.get(i));
+                s = list.get(i) + "," + hm.get(list.get(i)) + "\n";
                 As.add(s);
             }
         } catch (Exception e) {

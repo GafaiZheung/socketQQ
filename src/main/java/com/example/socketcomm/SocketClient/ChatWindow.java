@@ -7,20 +7,19 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,10 +33,15 @@ public class ChatWindow extends Application
     public static TextArea chatTextArea = new TextArea();
     public static TextField inputTextField = new TextField();
     public static TextField userIDField = new TextField();
-    public static TextField passWDField = new TextField();
+    public static PasswordField passWDField = new PasswordField();
     public static String chatWithID;
     protected static String currentUserID;
     protected static String currentUserNickName;
+    protected static ChatTitle contactTitle;
+    protected static VBox friendList;
+    protected static VBox infoCardBox;
+    protected static ScrollPane scrollPane;
+    protected static ScrollPane selectScrollPane;
 
 
     @Override
@@ -699,7 +703,7 @@ public class ChatWindow extends Application
 
     void sendProcess(ActionEvent event)
     {
-        if(inputTextField.getText() == null)
+        if(inputTextField.getText().length() == 0)
             return;
         chatMessageField.send(currentUserNickName, inputTextField.getText());
 //        chatTextArea.appendText("entered:" + inputTextField.getText() + "\n");
@@ -761,8 +765,8 @@ public class ChatWindow extends Application
         leftBorderBox.setStyle("-fx-background-color: #FFFFFF");
         leftBorderBox.setPrefWidth(52);
 
-        ScrollPane scrollPane = new ScrollPane();
-        VBox infoCardBox = new VBox(10);
+        scrollPane = new ScrollPane();
+        infoCardBox = new VBox(10);
 
         //根据currentUserID创建好友列表
         if (!Objects.equals(currentUserID, "0")) {
@@ -870,7 +874,7 @@ public class ChatWindow extends Application
         friendButton.setPrefWidth(120);
         groupButton.setPrefWidth(120);
 
-        ChatTitle contactTitle = new ChatTitle("");
+        contactTitle = new ChatTitle("");
 
         VBox rightBox = new VBox(10);
 
@@ -882,7 +886,7 @@ public class ChatWindow extends Application
             {
                 selectBox.getChildren().add(new SelectCard(friendInfoCard.allFriendInfoCards.get(i).getNickName(), friendInfoCard.allFriendInfoCards.get(i).getUserID()));
             }
-            ScrollPane selectScrollPane = new ScrollPane(selectBox);
+            selectScrollPane = new ScrollPane(selectBox);
             selectScrollPane.setPrefWidth(666);
             selectScrollPane.setPrefHeight(600);
 
@@ -907,11 +911,24 @@ public class ChatWindow extends Application
         centreButtonBox.getChildren().addAll(friendButton, groupButton);
 
         ScrollPane friendScrollPane = new ScrollPane();
+        friendScrollPane.setPrefHeight(470);
+
+        friendList = new VBox(10);
+        for(friendInfoCard card: friendInfoCard.allFriendInfoCards)
+        {
+            friendList.getChildren().add(new ContactorCard(card.getNickName(), card.getUserID(), rightBox));
+        }
+
+        friendButton.setOnAction(ActionEvent -> {
+            friendScrollPane.setContent(friendList);
+            contactTitle.setNickName("好友管理");
+            rightBox.getChildren().clear();
+            rightBox.getChildren().addAll(contactTitle);
+        });
 
         centreBox.getChildren().addAll(friendNotification, centreButtonBox, friendScrollPane);
         centreBox.setAlignment(Pos.TOP_CENTER);
         centreBox.setPrefWidth(265);
-
 
         friendNotification.setOnAction(ActionEvent ->
         {
@@ -933,12 +950,34 @@ public class ChatWindow extends Application
         searchField.setPrefWidth(265);
         searchField.setPrefHeight(40);
 
+
         Label focusLabel = new Label("");
         focusLabel.setOpacity(0);
         focusLabel.setFocusTraversable(true);
         searchField.setFocusTraversable(false);
 
         ScrollPane searchResult = new ScrollPane();
+        searchResult.setPrefHeight(500);
+        VBox searchBox = new VBox(10);
+
+        VBox addRightBox = new VBox();
+        addRightBox.setStyle("-fx-background-color: #FFFFFF");
+
+        ChatTitle addTitle = new ChatTitle("添加好友");
+        addRightBox.getChildren().add(addTitle);
+        searchField.setOnAction(ActionEvent -> {
+            if(searchField.getText() != null)
+            {
+                searchBox.getChildren().clear();
+                String[] search = searchFriendAction(searchField.getText());
+                for(String s: search)
+                {
+                    String[] str = s.split(",");
+                    searchBox.getChildren().add(new SearchResultCard(str[1], str[0], addRightBox));
+                }
+                searchResult.setContent(searchBox);
+            }
+        });
 
         VBox centreBoxA = new VBox(10);
         centreBoxA.setPadding(new Insets(10, 0, 0, 0));
@@ -946,7 +985,7 @@ public class ChatWindow extends Application
         centreBoxA.setPrefWidth(265);
         centreBoxA.getChildren().addAll(searchField, focusLabel, searchResult);
 
-        addBox.getChildren().addAll(centreBoxA);
+        addBox.getChildren().addAll(centreBoxA, addRightBox);
 
         chatImageView.setOnMouseClicked(mouseEvent ->
         {
@@ -972,6 +1011,7 @@ public class ChatWindow extends Application
             if(scene.getRoot().equals(addBox))
                 return;
 
+            searchBox.getChildren().clear();
             addBox.getChildren().add(0, leftBorderBox);
             scene.setRoot(addBox);
         });
@@ -979,6 +1019,95 @@ public class ChatWindow extends Application
         primaryStage.setTitle("Chat Window");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+
+    String[] searchFriendAction(String searchInfo) {
+        String IP = serverIP;
+        List<String> infoList = new ArrayList<>();
+
+        try {
+            Socket socket = new Socket(IP, 10001);
+
+            // 异步发送数据
+            Thread sendThread = new Thread(() -> {
+                try {
+                    OutputStream out = socket.getOutputStream();
+                    String dataToSend = "search," + currentUserID + "," + searchInfo + "\n"; // 添加换行符
+                    out.write(dataToSend.getBytes());
+                    out.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // 异步接收数据
+            Thread receiveThread = new Thread(() -> {
+                try {
+                    BufferedReader dataInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    String line;
+                    while ((line = dataInput.readLine()) != null) {
+                        if (line.equals("end"))
+                            break;
+                        infoList.add(line);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            sendThread.start();
+            receiveThread.start();
+
+            // 等待异步线程完成
+            sendThread.join();
+            receiveThread.join();
+
+            socket.close();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 将List转换为数组
+        return infoList.toArray(new String[0]);
+    }
+
+
+    public static void deleteFriendAction(String userID)
+    {
+        String IP = serverIP;
+        AtomicInteger loginStatus = new AtomicInteger();
+
+        try {
+            Socket socket = new Socket(IP, 10001);
+
+            OutputStream out = socket.getOutputStream();
+            String dataToSend = "delete," + currentUserID + "," + userID + "\n"; // 添加换行符
+            out.write(dataToSend.getBytes());
+            out.flush();
+
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for(friendInfoCard card: friendInfoCard.allFriendInfoCards)
+        {
+            if (card.userID.equals(userID))
+            {
+                infoCardBox.getChildren().remove(card);
+                friendInfoCard.allFriendInfoCards.remove(card);
+            }
+        }
+
+        for(ContactorCard card: ContactorCard.allContactorCards)
+        {
+            if(card.userID.equals(userID))
+            {
+                friendList.getChildren().remove(card);
+                ContactorCard.allContactorCards.remove(card);
+            }
+        }
     }
 
     public void addFriendScene(Stage primaryStage)
@@ -1140,7 +1269,7 @@ public class ChatWindow extends Application
             Thread sendThread = new Thread(() -> {
                 try {
                     OutputStream out = socket.getOutputStream();
-                    String dataToSend = currentUserID + "\n"; // 添加换行符
+                    String dataToSend = "pull," + currentUserID + "\n"; // 添加换行符
                     out.write(dataToSend.getBytes());
                     out.flush();
                 } catch (IOException e) {
