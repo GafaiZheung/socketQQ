@@ -2,7 +2,7 @@
 这是一个javafx图形化界面的局域网socket通信软件，实现了类似QQ的功能
 # 运行
 ## 下载
-`git clone `
+`git clone https://github.com/GafaiZheung/socketQQ.git`
 ## 客户端
 运行/src/java/com.example.socketcomm.SocketClient/ChatWindow \n
 
